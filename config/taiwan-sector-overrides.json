@@ -1,0 +1,53 @@
+{
+  "3026": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "3163": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "3532": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "4991": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "5439": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "6182": {"sector": "Information Technology", "source": "Vanguard VT official GICS 2026-07-31"},
+  "6505": {"sector": "Energy", "source": "Vanguard VT official GICS 2026-07-31"},
+  "3167": {
+    "sector": "Industrials",
+    "source": "TWSE official 電機機械; cross-checked S&P Global/StockAnalysis Industrials, reviewed 2026-09-14",
+    "source_url": "https://www.twse.com.tw/pdf/ch/3167_ch.pdf"
+  },
+  "4583": {
+    "sector": "Industrials",
+    "source": "TWSE official 電機機械; cross-checked S&P Global/StockAnalysis Industrials, reviewed 2026-09-14",
+    "source_url": "https://www.twse.com.tw/pdf/ch/4583_ch.pdf"
+  },
+  "7828": {
+    "sector": "Information Technology",
+    "source": "TPEx official 半導體業 + Fintel GICS Code 45; StockAnalysis/S&P labels Industrials; broad-sector crosswalk reviewed 2026-09-14",
+    "source_url": "https://nweb.tpex.org.tw/tpex239/newstar_2.html",
+    "secondary_source_url": "https://fintel.com.tw/industry/list/information-technology"
+  },
+  "7734": {
+    "sector": "Information Technology",
+    "source": "TPEx official 半導體業 + Fubon official fund holding category 半導體業; StockAnalysis/S&P conflicts; broad-sector crosswalk reviewed 2026-09-14",
+    "source_url": "https://nweb.tpex.org.tw/tpex236/newstar_1.html",
+    "secondary_source_url": "https://www.fubon.com/asset-management/fund/info/assets?Fd=203"
+  },
+  "6683": {
+    "sector": "Information Technology",
+    "source": "TPEx official 半導體業; cross-checked S&P Global/StockAnalysis Technology, reviewed 2026-09-14",
+    "source_url": "https://www.tpex.org.tw/storage/eb_data/10804/10800032531.html"
+  },
+  "6173": {
+    "sector": "Information Technology",
+    "source": "TPEx official 電子零組件業; cross-checked S&P Global/StockAnalysis Technology, reviewed 2026-09-14",
+    "source_url": "https://www.tpex.org.tw/storage/eb_data/10010/10000270752.htm"
+  },
+  "6584": {
+    "sector": "Industrials",
+    "source": "TPEx official 電子零組件業 + Finnhub GICS Industrials via GrahamValue; StockAnalysis conflicts; broad-sector crosswalk reviewed 2026-09-14",
+    "source_url": "https://www.grahamvalue.com/stock/6584two",
+    "secondary_source_url": "https://www.tpex.org.tw/storage/eb_data/11205/11200038331.html"
+  },
+  "3357": {
+    "sector": "Information Technology",
+    "source": "TPEx official 電子零組件業 + Finnhub GICS Information Technology via GrahamValue; cross-checked S&P Global/StockAnalysis Technology, reviewed 2026-09-14",
+    "source_url": "https://www.grahamvalue.com/stock/3357two",
+    "secondary_source_url": "https://www.tpex.org.tw/storage/eb_data/11004/11000564091.html"
+  }
+}

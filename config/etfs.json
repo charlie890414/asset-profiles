@@ -1,0 +1,293 @@
+{
+  "max_age_days": 90,
+  "etfs": [
+    {
+      "ticker": "0050",
+      "symbol": "0050.TW",
+      "name": "元大台灣50",
+      "issuer": "Yuanta",
+      "listings": [
+        {
+          "symbol": "0050.TW",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        },
+        {
+          "symbol": "0050",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "yuanta",
+          "url": "https://www.yuantaetfs.com/product/detail/0050/ratio"
+        }
+      ]
+    },
+    {
+      "ticker": "0051",
+      "symbol": "0051.TW",
+      "name": "元大中型100",
+      "issuer": "Yuanta",
+      "listings": [
+        {
+          "symbol": "0051.TW",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        },
+        {
+          "symbol": "0051",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "yuanta",
+          "url": "https://www.yuantaetfs.com/product/detail/0051/ratio"
+        }
+      ]
+    },
+    {
+      "ticker": "006201",
+      "symbol": "006201.TWO",
+      "name": "元大富櫃50",
+      "issuer": "Yuanta",
+      "listings": [
+        {
+          "symbol": "006201.TWO",
+          "exchange_mic": "ROCO",
+          "currency": "TWD"
+        },
+        {
+          "symbol": "006201",
+          "exchange_mic": "ROCO",
+          "currency": "TWD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "yuanta",
+          "url": "https://www.yuantaetfs.com/product/detail/006201/ratio"
+        }
+      ]
+    },
+    {
+      "ticker": "006208",
+      "symbol": "006208.TW",
+      "name": "富邦台50",
+      "issuer": "Fubon",
+      "listings": [
+        {
+          "symbol": "006208.TW",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        },
+        {
+          "symbol": "006208",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "fubon",
+          "url": "https://websys.fsit.com.tw/FubonETF/Trade/Assets.aspx?lan=TW&stkId=006208"
+        }
+      ]
+    },
+    {
+      "ticker": "009826",
+      "symbol": "009826.TW",
+      "name": "BlackRock iShares Global All Cap ETF",
+      "issuer": "BlackRock",
+      "listings": [
+        {
+          "symbol": "009826.TW",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        },
+        {
+          "symbol": "009826",
+          "exchange_mic": "XTAI",
+          "currency": "TWD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "blackrock",
+          "url": "https://www.blackrock.com/tw/products/351824/fund/1480664180144.ajax?dataType=fund&fileName=009826_holdings&fileType=csv",
+          "nested_funds": [
+            "NDIA"
+          ],
+          "nested_source_urls": {
+            "NDIA": "https://www.blackrock.com/varnish-api/uk-retail01-product-data/product-data/api/v1/get-fund-document?appSubType=ISHARES&appType=PRODUCT_PAGE&component=fundDownloadV2&locale=en_GB&portfolioId=297617&targetSite=ishares-uk&userType=individual"
+          }
+        }
+      ]
+    },
+    {
+      "ticker": "SPYM",
+      "symbol": "SPYM",
+      "name": "State Street SPDR Portfolio S&P 500 ETF",
+      "issuer": "SSGA",
+      "listings": [
+        {
+          "symbol": "SPYM",
+          "exchange_mic": "ARCX",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "ssga",
+          "url": "https://www.ssga.com/library-content/products/fund-data/etfs/us/holdings-daily-us-en-spym.xlsx",
+          "allocation_url": "https://www.ssga.com/us/en/individual/etfs/funds/spdr-portfolio-sp-500-etf-spym",
+          "country_override": "US"
+        }
+      ]
+    },
+    {
+      "ticker": "VT",
+      "symbol": "VT",
+      "name": "Vanguard Total World Stock ETF",
+      "issuer": "Vanguard",
+      "listings": [
+        {
+          "symbol": "VT",
+          "exchange_mic": "ARCX",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "vanguard",
+          "url": "https://www.vanguard.co.uk/gpx/graphql",
+          "portfolio_id": "3141",
+          "name_contains": "Vanguard Total World Stock ETF"
+        }
+      ]
+    },
+    {
+      "ticker": "VWRA",
+      "symbol": "VWRA.L",
+      "name": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+      "issuer": "Vanguard",
+      "listings": [
+        {
+          "symbol": "VWRA.L",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        },
+        {
+          "symbol": "VWRA",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "vanguard",
+          "url": "https://www.vanguard.co.uk/gpx/graphql",
+          "portfolio_id": "9679",
+          "name_contains": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating"
+        }
+      ]
+    },
+    {
+      "ticker": "VALU",
+      "symbol": "VALU.L",
+      "name": "Vanguard FTSE Global All-Cap UCITS ETF USD Acc",
+      "issuer": "Vanguard",
+      "listings": [
+        {
+          "symbol": "VALU.L",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        },
+        {
+          "symbol": "VALU",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "vanguard",
+          "url": "https://www.vanguard.co.uk/gpx/graphql",
+          "portfolio_id": "E161",
+          "name_contains": "Vanguard FTSE Global All-Cap UCITS ETF USD Acc"
+        },
+        {
+          "adapter": "vanguard",
+          "url": "https://www.vanguard.co.uk/gpx/graphql",
+          "portfolio_id": "E161",
+          "name_contains": "Vanguard FTSE Global All-Cap UCITS ETF USD Acc",
+          "holdings_field": "delayeredHoldings"
+        },
+        {
+          "adapter": "metadata",
+          "url": "https://www.vanguard.co.uk/professional/product/etf/equity/E161/ftse-global-all-cap-ucits-etf-usd-acc.html",
+          "content_type": "html",
+          "isin": "IE000VAHT5T0",
+          "asset_class": "Equity",
+          "domicile": "IE",
+          "description": "Vanguard product page reports the fund as Equity but holdings details are temporarily unavailable."
+        }
+      ]
+    },
+    {
+      "ticker": "FWRA",
+      "symbol": "FWRA.L",
+      "name": "Invesco FTSE All-World UCITS ETF USD Accumulation",
+      "issuer": "Invesco",
+      "listings": [
+        {
+          "symbol": "FWRA.L",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        },
+        {
+          "symbol": "FWRA",
+          "exchange_mic": "XLON",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "metadata",
+          "url": "https://www.invesco.com/content/dam/invesco/emea/en/product-documents/etf/share-class/factsheet/IE000716YHJ7_factsheet_en.pdf",
+          "as_of_date": "2026-07-31",
+          "isin": "IE000716YHJ7",
+          "asset_class": "Equity",
+          "domicile": "IE",
+          "description": "Official factsheet contains fund metadata but no complete holding allocation."
+        }
+      ]
+    },
+    {
+      "ticker": "BOXX",
+      "symbol": "BOXX",
+      "name": "Alpha Architect 1-3 Month Box ETF",
+      "issuer": "Alpha Architect",
+      "listings": [
+        {
+          "symbol": "BOXX",
+          "exchange_mic": "BATS",
+          "currency": "USD"
+        }
+      ],
+      "sources": [
+        {
+          "adapter": "metadata",
+          "url": "https://funds.alphaarchitect.com/boxx/",
+          "content_type": "html",
+          "as_of_date": "2026-09-11",
+          "asset_class": "Options",
+          "description": "Official holdings are signed box-spread options and cash; equity GICS look-through is not applicable."
+        }
+      ]
+    }
+  ]
+}

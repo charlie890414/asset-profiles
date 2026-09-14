@@ -1,0 +1,40 @@
+name: Weekly ETF review
+on:
+  schedule:
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: etf-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - name: Fetch issuer profiles and prepare review
+        run: python scripts/build.py
+      - name: Attach review to run
+        if: always()
+        run: |
+          if [ -f review/review.md ]; then cat review/review.md >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Preserve review and source evidence even on partial failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: etf-review-${{ github.run_id }}
+          path: |
+            review/
+            .cache/
+          retention-days: 30
+          include-hidden-files: true

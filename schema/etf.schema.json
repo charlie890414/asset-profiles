@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wealthfolio/asset-profiles/schema/etf.schema.json",
+  "title": "ETF Profile",
+  "type": "object",
+  "required": ["schema_version", "kind", "primary_symbol", "listings", "name", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "kind": { "const": "etf" },
+    "isin": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$"
+    },
+    "primary_symbol": { "type": "string", "minLength": 1 },
+    "listings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["symbol"],
+        "additionalProperties": false,
+        "properties": {
+          "symbol":       { "type": "string", "minLength": 1 },
+          "exchange_mic": { "type": "string", "pattern": "^[A-Z0-9]{4}$" },
+          "currency":     { "type": "string", "pattern": "^[A-Z]{3}$" }
+        }
+      }
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "issuer": { "type": "string" },
+    "category_group": { "type": "string" },
+    "category": { "type": "string" },
+    "expense_ratio": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "aum_usd": {
+      "type": "number",
+      "minimum": 0
+    },
+    "inception_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "as_of_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "sector_weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sector", "weight"],
+        "additionalProperties": false,
+        "properties": {
+          "sector": { "type": "string", "minLength": 1 },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "country_weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["country", "weight"],
+        "additionalProperties": false,
+        "properties": {
+          "country":      { "type": "string", "minLength": 1 },
+          "country_code": {
+            "anyOf": [
+              { "type": "string", "pattern": "^[A-Z]{2}$" },
+              { "type": "null" }
+            ]
+          },
+          "weight":       { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "asset_class_weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_class", "weight"],
+        "additionalProperties": false,
+        "properties": {
+          "asset_class": { "type": "string", "minLength": 1 },
+          "weight":      { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "top_holdings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["weight"],
+        "additionalProperties": false,
+        "properties": {
+          "symbol": { "type": "string" },
+          "isin":   { "type": "string", "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" },
+          "cusip":  { "type": "string", "pattern": "^[A-Z0-9]{9}$" },
+          "name":   { "type": "string" },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "holdings_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "identifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "isin":  { "type": "string", "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" },
+        "cusip": { "type": "string", "pattern": "^[A-Z0-9]{9}$" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source", "fetched_at"],
+      "additionalProperties": false,
+      "properties": {
+        "source":     { "type": "string", "minLength": 1 },
+        "source_url": { "type": "string", "format": "uri" },
+        "fetched_at": { "type": "string", "format": "date-time" },
+        "license":    { "type": "string" }
+      }
+    }
+  }
+}

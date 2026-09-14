@@ -1,0 +1,10 @@
+{
+  "query": "query FundsHoldingsQuery($portIds: [String!], $securityTypes: [String!], $lastItemKey: String) {\n    funds(portIds: $portIds) {\n      profile {\n        fundFullName\n        fundCurrency\n        primarySectorEquityClassification\n      }\n    }\n    borHoldings(portIds: $portIds) {\n      holdings(limit: 1500, securityTypes: $securityTypes, lastItemKey: $lastItemKey) {\n        items {\n          issuerName\n          securityLongDescription\n          gicsSectorDescription\n          icbSectorDescription\n          icbIndustryDescription\n          marketValuePercentage\n          sedol1\n          quantity\n          ticker\n          securityType\n          finalMaturity\n          effectiveDate\n          marketValueBaseCurrency\n          bloombergIsoCountry\n          couponRate\n        }\n        totalHoldings\n        lastItemKey\n      }\n    }\n  }\r\n",
+  "variables": {
+    "portIds": [
+      "9679"
+    ],
+    "lastItemKey": null,
+    "securityTypes": null
+  }
+}

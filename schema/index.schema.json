@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wealthfolio/asset-profiles/schema/index.schema.json",
+  "title": "Asset Profiles Index",
+  "description": "Root index mapping symbols and ISINs to per-record JSON paths.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "next_refresh_at", "counts", "symbols", "isins"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_refresh_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stocks", "etfs"],
+      "properties": {
+        "stocks": { "type": "integer", "minimum": 0 },
+        "etfs":   { "type": "integer", "minimum": 0 }
+      }
+    },
+    "symbols": {
+      "type": "object",
+      "description": "Map from ticker symbol (with optional Yahoo-style exchange suffix) to a path + kind + ISIN.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["kind", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["stock", "etf"] },
+          "path": { "type": "string", "pattern": "^(stocks|etfs)/.+\\.json$" },
+          "isin": { "type": "string", "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" }
+        }
+      }
+    },
+    "isins": {
+      "type": "object",
+      "description": "Map from ISIN to path.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^(stocks|etfs)/.+\\.json$"
+      },
+      "propertyNames": {
+        "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$"
+      }
+    }
+  }
+}

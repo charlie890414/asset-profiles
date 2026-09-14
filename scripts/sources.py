@@ -1,0 +1,387 @@
+"""Issuer adapters. Unknown structures fail closed; no guessed API results."""
+from __future__ import annotations
+
+import csv
+import hashlib
+import io
+import json
+import re
+import ssl
+import subprocess
+import shutil
+import time
+import urllib.request
+import xml.etree.ElementTree as ET
+from datetime import datetime
+from pathlib import Path
+
+from bs4 import BeautifulSoup
+from openpyxl import load_workbook
+
+from common import ROOT, number, country, sector, now
+
+
+class Fetcher:
+    def __init__(self, cache=ROOT / '.cache', offline=False):
+        self.cache, self.offline = Path(cache), offline
+        self.evidence = []
+
+    def get(self, url, body=None):
+        if not url.startswith('https://'):
+            raise ValueError('Sources must use HTTPS')
+        data = json.dumps(body).encode() if body is not None else None
+        key = hashlib.sha256(url.encode() + (data or b'')).hexdigest()
+        path = self.cache / key
+        meta_path = self.cache / (key + '.json')
+        if self.offline:
+            content = path.read_bytes()
+            meta = json.loads(meta_path.read_text(encoding='utf-8'))
+        else:
+            # Keep hostname and CA-chain verification. The issuer's legacy CA lacks
+            # a Subject Key Identifier, which Python 3.13 strict mode rejects.
+            context = ssl.create_default_context()
+            context.verify_flags &= ~ssl.VERIFY_X509_STRICT
+            headers = {'User-Agent': 'Mozilla/5.0 (compatible; ETFProfileResearch/1.0)',
+                       'Accept': '*/*'}
+            if data is not None:
+                headers['Content-Type'] = 'application/json'
+            if url == 'https://www.vanguard.co.uk/gpx/graphql':
+                headers['X-Consumer-ID'] = 'uk2'  # Public website client identifier.
+            request = urllib.request.Request(url, data=data, headers=headers)
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(request, context=context, timeout=40) as response:
+                        content = response.read(25_000_001)
+                        if len(content) > 25_000_000:
+                            raise ValueError('Source exceeds 25 MB limit')
+                    break
+                except (OSError, TimeoutError):
+                    if attempt == 2:
+                        raise
+                    time.sleep(1 + attempt)
+            self.cache.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+            meta = {'source_url': url, 'fetched_at': now(), 'sha256': hashlib.sha256(content).hexdigest()}
+            meta_path.write_text(json.dumps(meta), encoding='utf-8')
+        if hashlib.sha256(content).hexdigest() != meta['sha256']:
+            raise ValueError('Cache hash mismatch')
+        self.evidence.append(meta)
+        return content
+
+
+def parse_date(value):
+    value = str(value).strip().replace('Sept', 'Sep')
+    match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', value)
+    if match:
+        return datetime(*map(int, match.groups())).date().isoformat()
+    for fmt in ['%Y-%m-%d', '%Y/%m/%d', '%Y%m%d', '%b %d, %Y', '%b %d %Y', '%d/%b/%Y', '%d %b %Y', '%d-%b-%Y', '%m/%d/%Y']:
+        try:
+            return datetime.strptime(value, fmt).date().isoformat()
+        except ValueError:
+            pass
+    raise ValueError(f'Unknown source date: {value!r}')
+
+
+def parse_blackrock(content):
+    text = content.decode('utf-8-sig')
+    lines = text.splitlines()
+    header = next(i for i, line in enumerate(lines) if line.startswith('Ticker,Name,Sector,'))
+    date_row = next(csv.reader([line]) for line in lines[:header] if line.startswith(('Fund Holdings as of,','截至,')))
+    as_of = parse_date(next(date_row)[1])
+    holdings = []
+    for row in csv.DictReader(io.StringIO('\n'.join(lines[header:]))):
+        if not row.get('Weight (%)') or not row.get('Market Value'):
+            continue
+        holdings.append({'symbol':row['Ticker'], 'name':row['Name'],
+                         'weight':float(number(row['Weight (%)']) / 100),
+                         'value':float(number(row['Market Value'])),
+                         'country':country(row['Location']), 'sector':sector(row['Sector']),
+                         'equity':row['Asset Class'] in ['Equity', '指數股票型'],
+                         'source_asset_class':row['Asset Class']})
+    if not holdings:
+        raise ValueError('Empty BlackRock holdings')
+    return {'as_of_date':as_of, 'holdings':holdings, 'complete_holdings':True,
+            'sector_taxonomy':'GICS', 'country_basis':'issuer Location',
+            'denominator':'equity market value', 'issues':[]}
+
+
+def parse_blackrock_xml(content, default_country='IN'):
+    """Parse BlackRock's SpreadsheetML holdings export used by nested UCITS ETFs."""
+    ns = {'ss': 'urn:schemas-microsoft-com:office:spreadsheet'}
+    root = ET.fromstring(content)
+    worksheet = next((node for node in root.findall('ss:Worksheet', ns)
+                      if node.attrib.get('{urn:schemas-microsoft-com:office:spreadsheet}Name') == 'Holdings'), None)
+    if worksheet is None:
+        raise ValueError('BlackRock XML has no Holdings worksheet')
+    rows = []
+    for row in worksheet.findall('ss:Table/ss:Row', ns):
+        values = []
+        for cell in row.findall('ss:Cell', ns):
+            data = cell.find('ss:Data', ns)
+            values.append('' if data is None or data.text is None else data.text.strip())
+        rows.append(values)
+    header_index = next((i for i, row in enumerate(rows) if 'Issuer Ticker' in row and 'Weight (%)' in row), None)
+    if header_index is None:
+        raise ValueError('BlackRock XML holdings header missing')
+    header = {name: index for index, name in enumerate(rows[header_index])}
+    date_value = None
+    for row in rows:
+        if len(row) >= 2 and row[0].lower() == 'as of':
+            date_value = parse_date(row[1])
+            break
+    if date_value is None:
+        raise ValueError('BlackRock XML holdings date missing')
+    holdings = []
+    for row in rows[header_index + 1:]:
+        if len(row) <= max(header.values()):
+            continue
+        ticker = row[header['Issuer Ticker']].strip()
+        weight = row[header['Weight (%)']].strip()
+        if not ticker or not weight or ticker.lower() in {'issuer ticker', 'cash'}:
+            continue
+        market_value = row[header.get('Market Value', header['Weight (%)'])]
+        numeric_value = re.sub(r'[^0-9.+-]', '', market_value)
+        if not numeric_value:
+            continue
+        holdings.append({'symbol': ticker, 'name': row[header['Name']],
+                         'weight': float(number(weight) / 100),
+                         'value': float(number(numeric_value)),
+                         'country': default_country,
+                         'sector': sector(row[header['Sector']]),
+                         'equity': row[header['Asset Class']].strip().casefold() == 'equity',
+                         'source_asset_class': row[header['Asset Class']]})
+    if not holdings:
+        raise ValueError('BlackRock XML holdings empty')
+    return {'as_of_date': date_value, 'holdings': holdings, 'complete_holdings': True,
+            'sector_taxonomy': 'GICS', 'country_basis': 'nested fund underlying issuer market',
+            'denominator': 'equity market value', 'issues': []}
+
+
+def blackrock(entry, source, fetch):
+    result = parse_blackrock(fetch.get(source['url']))
+    # A nested fund is expanded through its official holdings file. Its own
+    # domicile and issuer sector are never used as look-through exposure.
+    for nested in source.get('nested_funds', []):
+        parent = next((h for h in result['holdings'] if h['symbol'] == nested), None)
+        if parent is None:
+            continue
+        nested_url = source.get('nested_source_urls', {}).get(nested)
+        if not nested_url:
+            parent['country'] = parent['sector'] = None
+            result['issues'].append(f'Nested fund {nested} requires look-through')
+            continue
+        nested_result = parse_blackrock_xml(fetch.get(nested_url))
+        expanded = []
+        for holding in result['holdings']:
+            if holding is not parent:
+                expanded.append(holding)
+        for child in nested_result['holdings']:
+            expanded.append({**child,
+                             'symbol': f'{nested}:{child["symbol"]}',
+                             'weight': child['weight'] * parent['weight'],
+                             'value': child['value'] * parent['weight']})
+        result['holdings'] = expanded
+        result['as_of_date'] = min(result['as_of_date'], nested_result['as_of_date'])
+        result['issues'].append(f'Nested fund {nested} expanded from official holdings')
+    return result
+
+
+def classification_map(fetch):
+    mapping, dates = {}, []
+    for ticker, product in [('EWT','239686/ishares-msci-taiwan-etf'),('EEMS','239642/ishares-msci-emerging-markets-smallcap-etf')]:
+        doc = parse_blackrock(fetch.get(f'https://www.ishares.com/us/products/{product}/latest-holdings.csv'))
+        dates.append(doc['as_of_date'])
+        for holding in doc['holdings']:
+            if holding['equity'] and holding['country'] == 'TW' and holding['sector']:
+                mapping.setdefault(holding['symbol'], holding['sector'])
+    overrides_path = ROOT / 'config' / 'taiwan-sector-overrides.json'
+    if overrides_path.exists():
+        overrides = json.loads(overrides_path.read_text(encoding='utf-8'))
+        mapping.update({str(k): v['sector'] if isinstance(v, dict) else v for k, v in overrides.items()})
+    return mapping, dates
+
+
+def yuanta(entry, source, fetch):
+    html = fetch.get(source['url'])
+    node = shutil.which('node')
+    if not node:
+        raise RuntimeError('Node.js is required to parse Yuanta Nuxt state')
+    result = subprocess.run([node, str(ROOT/'scripts/nuxt-data.cjs')], input=html,
+                            capture_output=True, timeout=10, check=True)
+    data = json.loads(result.stdout)
+    fund = next(d['fundData'] for d in data['data'] if d.get('fundData'))
+    if fund['STK_CD'] != entry['ticker']:
+        raise ValueError('Yuanta identity mismatch')
+    raw = next(d['weightData'] for d in data['data'] if d.get('weightData'))
+    weights = raw['FundWeights']
+    nav = number(raw['PCF']['totalav'])
+    if nav <= 0:
+        raise ValueError('Invalid NAV')
+    mapping, dates = classification_map(fetch)
+    holdings = [{'symbol':h['code'], 'name':h['name'], 'weight':float(number(h['weights'])/100),
+                 'value':float(number(h['weights'])), 'country':'TW', 'sector':mapping.get(h['code']), 'equity':True}
+                for h in weights['StockWeights']]
+    return {'as_of_date':parse_date(raw['PCF']['trandate']), 'holdings':holdings,
+            'isin':fund['ISINCODE'], 'name':fund['FUND_NAME'], 'complete_holdings':True,
+            'classification_dates':dates, 'sector_taxonomy':'GICS (issuer holdings lookup)',
+            'country_basis':'Taiwan domestic equity investment market; not issuer domicile',
+            'equity_fraction_nav':float(number(weights['Summary']['stkvalues'])/nav),
+            'denominator':'sum of issuer rounded stock weights (equity sleeve)',
+            'issues':['Non-equity NAV residual remains unclassified; futures notional excluded']}
+
+
+def fubon(entry, source, fetch):
+    soup = BeautifulSoup(fetch.get(source['url']), 'html.parser')
+    text = soup.get_text(' ', strip=True)
+    if entry['ticker'] not in text:
+        raise ValueError('Fubon identity missing')
+    date_match = re.search(r'(?:日期|資料日|資料日期|淨值日期)[：:\s]*(\d{4}[/-]\d{1,2}[/-]\d{1,2})', text)
+    if not date_match:
+        raise ValueError('Cannot identify Fubon holdings date')
+    nav = number(re.search(r'基金淨資產\(新台幣\)\s*([\d,]+)', text)[1])
+    table = next(t for t in soup.find_all('table') if '股票代碼' in t.get_text() and '金額' in t.get_text())
+    mapping, dates = classification_map(fetch)
+    holdings = []
+    for row in table.find_all('tr'):
+        cells = [c.get_text(' ',strip=True) for c in row.find_all(['td','th'])]
+        if len(cells) >= 5 and re.fullmatch(r'\d{4}', cells[0]):
+            value = number(cells[3])
+            holdings.append({'symbol':cells[0], 'name':cells[1], 'value':float(value),
+                             'weight':float(value/nav), 'country':'TW', 'sector':mapping.get(cells[0]), 'equity':True})
+    if not holdings:
+        raise ValueError('Empty Fubon stock table')
+    return {'as_of_date':parse_date(date_match[1]), 'holdings':holdings, 'complete_holdings':True,
+            'classification_dates':dates, 'sector_taxonomy':'GICS (issuer holdings lookup)',
+            'country_basis':'Taiwan domestic equity investment market; not issuer domicile',
+            'denominator':'equity market value',
+            'equity_fraction_nav':sum(h['weight'] for h in holdings),
+            'issues':['Non-equity NAV residual remains unclassified; futures notional excluded']}
+
+
+def vanguard(entry, source, fetch):
+    request = json.loads((ROOT/'config/vanguard-query.json').read_text(encoding='utf-8'))
+    if source.get('holdings_field') == 'delayeredHoldings':
+        request['query'] = request['query'].replace('holdings(limit:', 'delayeredHoldings(limit:')
+    request['variables']['portIds'] = [source['portfolio_id']]
+    request['variables']['lastItemKey'] = None
+    items, cursors, dates = [], set(), set()
+    for _ in range(40):
+        response = json.loads(fetch.get(source['url'], request))
+        if response.get('errors'):
+            raise ValueError(f"Vanguard API errors: {response['errors']}")
+        profile = response['data']['funds'][0]['profile']
+        if source['name_contains'].casefold() not in profile['fundFullName'].casefold():
+            raise ValueError('Vanguard identity mismatch')
+        field = source.get('holdings_field','holdings')
+        page = response['data']['borHoldings'][0][field]
+        items.extend(page['items'])
+        cursor = page['lastItemKey']
+        if not cursor:
+            break
+        if cursor in cursors:
+            raise ValueError('Repeated holdings cursor')
+        cursors.add(cursor)
+        request['variables']['lastItemKey'] = cursor
+    else:
+        raise ValueError('Holdings pagination limit')
+    if not items or len(items) != page['totalHoldings']:
+        raise ValueError(f"Incomplete holdings: {len(items)} / {page['totalHoldings']}")
+    holdings = []
+    for h in items:
+        dates.add(parse_date(h['effectiveDate']))
+        holdings.append({'symbol':h.get('ticker') or '', 'name':h['securityLongDescription'],
+                         'weight':float(number(h['marketValuePercentage'])/100),
+                         'value':float(number(h['marketValueBaseCurrency'])),
+                         'country':country(h['bloombergIsoCountry']), 'sector':sector(h['gicsSectorDescription']),
+                         'equity':h['securityType'] == 'EQ.STOCK'})
+    if len(dates) != 1:
+        raise ValueError('Mixed Vanguard holdings dates')
+    return {'as_of_date':dates.pop(), 'name':profile['fundFullName'], 'holdings':holdings,
+            'complete_holdings':True, 'sector_taxonomy':'GICS (gicsSectorDescription, not ICB)',
+            'country_basis':'bloombergIsoCountry', 'denominator':'equity market value', 'issues':[]}
+
+
+def ssga(entry, source, fetch):
+    workbook = load_workbook(io.BytesIO(fetch.get(source['url'])), read_only=True, data_only=True)
+    rows = list(workbook.active.values)
+    header = next(i for i,r in enumerate(rows) if 'Weight' in r and 'Name' in r)
+    columns = {v:i for i,v in enumerate(rows[header]) if v}
+    dates = []
+    for row in rows[:header]:
+        for value in row:
+            if isinstance(value, datetime):
+                dates.append(value.date().isoformat())
+            elif isinstance(value,str):
+                match = re.search(r'(?:as of|As of|As Of)\s*[:：]?\s*(.+)',value)
+                if match:
+                    try:
+                        dates.append(parse_date(match[1]))
+                    except ValueError:
+                        pass
+    if not dates:
+        raise ValueError('SSGA holdings date missing')
+    holdings = []
+    for row in rows[header+1:]:
+        weight = row[columns['Weight']]
+        if not isinstance(weight,(int,float)):
+            continue
+        def cell(*names):
+            return next((row[columns[n]] for n in names if n in columns), None)
+        holdings.append({'symbol':cell('Ticker'), 'name':cell('Name'), 'weight':float(number(weight)/100),
+                         'value':float(number(weight)), 'sector':sector(cell('Sector')),
+                         'country':country(cell('Country','Country of Risk')),
+                         'equity':not bool(re.search(r'\bFUT\b|\bCASH\b', str(cell('Name')),re.I))})
+        if source.get('country_override') and holdings[-1]['equity']:
+            holdings[-1]['country'] = source['country_override']
+    result = {'as_of_date':dates[0], 'holdings':holdings, 'complete_holdings':True,
+            'sector_taxonomy':'GICS (issuer Sector)', 'country_basis':'issuer country, unknown if absent',
+            'denominator':'sum of stock holding weights', 'issues':[]}
+    if source.get('allocation_url'):
+        soup = BeautifulSoup(fetch.get(source['allocation_url']), 'html.parser')
+        section = next(s for s in soup.find_all('section') if s.find('h2') and 'Sector Allocation' in s.find('h2').get_text())
+        allocation_date = parse_date(section.find(class_='date').get_text(strip=True).replace('as of ',''))
+        if allocation_date != result['as_of_date']:
+            raise ValueError('SSGA allocation/holdings dates differ')
+        table = section.find('table')
+        allocation = {}
+        for tr in table.find_all('tr'):
+            cells = tr.find_all('td')
+            if len(cells) >= 2:
+                label = sector(cells[0].get_text(strip=True))
+                if not label:
+                    raise ValueError('Unmapped SSGA sector label')
+                allocation[label] = float(number(cells[1].get_text(strip=True))/100)
+        if len(allocation) != 11:
+            raise ValueError('Incomplete SSGA sector table')
+        result['direct_sectors'] = allocation
+        if source.get('country_override'):
+            result['country_basis'] = 'S&P 500 constituent universe (US); issuer holdings file has no country column'
+        else:
+            result['issues'].append('Country allocation unavailable in issuer holdings file')
+    return result
+
+
+def metadata(entry, source, fetch):
+    content = fetch.get(source['url'])
+    if source.get('content_type') == 'html':
+        page = BeautifulSoup(content, 'html.parser').get_text(' ', strip=True)
+        date_match = re.search(r'(?:At closure|as of)\s+(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})', page)
+        as_of = parse_date(date_match.group(1)) if date_match else source.get('as_of_date')
+    else:
+        as_of = source.get('as_of_date')
+    if not as_of:
+        raise ValueError('Metadata source date missing')
+    return {'metadata_only': True, 'as_of_date': as_of, 'name': entry['name'],
+            'isin': source.get('isin'), 'asset_class': source.get('asset_class', 'Equity'),
+            'domicile': source.get('domicile'), 'source_description': source.get('description'),
+            'issues': ['Official holdings allocation unavailable at source'],
+            'sector_taxonomy': 'Unavailable', 'country_basis': 'Unavailable'}
+
+
+def evidence_only(entry, source, fetch):
+    fetch.get(source['url'])
+    raise ValueError(source['reason'])
+
+
+ADAPTERS = {'yuanta':yuanta, 'fubon':fubon, 'blackrock':blackrock,
+            'vanguard':vanguard, 'ssga':ssga, 'metadata': metadata, 'evidence_only':evidence_only}

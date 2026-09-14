@@ -1,0 +1,5 @@
+requests>=2.32,<3
+beautifulsoup4>=4.12,<5
+jsonschema>=4.21,<5
+pycountry>=24.6,<25
+openpyxl>=3.1,<4

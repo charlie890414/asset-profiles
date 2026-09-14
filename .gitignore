@@ -1,0 +1,7 @@
+.venv/
+.upstream/
+.cache/
+reference.zip
+__pycache__/
+*.pyc
+.local/
