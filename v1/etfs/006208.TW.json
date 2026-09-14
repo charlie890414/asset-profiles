@@ -1,0 +1,116 @@
+{
+  "as_of_date": "2026-09-11",
+  "country_weights": [
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 1.0
+    }
+  ],
+  "holdings_count": 50,
+  "issuer": "Fubon",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "006208.TW"
+    },
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "006208"
+    }
+  ],
+  "name": "富邦台50",
+  "primary_symbol": "006208.TW",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:44Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "Fubon official",
+    "source_url": "https://websys.fsit.com.tw/FubonETF/Trade/Assets.aspx?lan=TW&stkId=006208"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.8829
+    },
+    {
+      "sector": "Financials",
+      "weight": 0.087
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0112
+    },
+    {
+      "sector": "Communication Services",
+      "weight": 0.0087
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.0057
+    },
+    {
+      "sector": "Consumer Staples",
+      "weight": 0.0036
+    },
+    {
+      "sector": "Energy",
+      "weight": 0.0009
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "台積電",
+      "symbol": "2330",
+      "weight": 0.5697800786579051
+    },
+    {
+      "name": "聯發科",
+      "symbol": "2454",
+      "weight": 0.0653004223247562
+    },
+    {
+      "name": "台達電",
+      "symbol": "2308",
+      "weight": 0.030266406395645106
+    },
+    {
+      "name": "鴻海",
+      "symbol": "2317",
+      "weight": 0.029299243068423773
+    },
+    {
+      "name": "日月光投控",
+      "symbol": "3711",
+      "weight": 0.019839144672850837
+    },
+    {
+      "name": "聯電",
+      "symbol": "2303",
+      "weight": 0.01585658606721915
+    },
+    {
+      "name": "台光電",
+      "symbol": "2383",
+      "weight": 0.015082694270933741
+    },
+    {
+      "name": "欣興",
+      "symbol": "3037",
+      "weight": 0.012468694840885563
+    },
+    {
+      "name": "富邦金",
+      "symbol": "2881",
+      "weight": 0.011983925899550532
+    },
+    {
+      "name": "中信金",
+      "symbol": "2891",
+      "weight": 0.011485529906377984
+    }
+  ]
+}

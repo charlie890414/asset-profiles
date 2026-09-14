@@ -1,0 +1,117 @@
+{
+  "as_of_date": "2026-09-11",
+  "country_weights": [
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 1.0
+    }
+  ],
+  "holdings_count": 50,
+  "isin": "TW0000050004",
+  "issuer": "Yuanta",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "0050.TW"
+    },
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "0050"
+    }
+  ],
+  "name": "元大台灣卓越50證券投資信託基金",
+  "primary_symbol": "0050.TW",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:39Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "Yuanta official",
+    "source_url": "https://www.yuantaetfs.com/product/detail/0050/ratio"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.8829
+    },
+    {
+      "sector": "Financials",
+      "weight": 0.087
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0112
+    },
+    {
+      "sector": "Communication Services",
+      "weight": 0.0087
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.0057
+    },
+    {
+      "sector": "Consumer Staples",
+      "weight": 0.0036
+    },
+    {
+      "sector": "Energy",
+      "weight": 0.0009
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "台積電",
+      "symbol": "2330",
+      "weight": 0.5701
+    },
+    {
+      "name": "聯發科",
+      "symbol": "2454",
+      "weight": 0.0653
+    },
+    {
+      "name": "台達電",
+      "symbol": "2308",
+      "weight": 0.0303
+    },
+    {
+      "name": "鴻海",
+      "symbol": "2317",
+      "weight": 0.0293
+    },
+    {
+      "name": "日月光投控",
+      "symbol": "3711",
+      "weight": 0.0199
+    },
+    {
+      "name": "聯電",
+      "symbol": "2303",
+      "weight": 0.0159
+    },
+    {
+      "name": "台光電",
+      "symbol": "2383",
+      "weight": 0.0151
+    },
+    {
+      "name": "欣興",
+      "symbol": "3037",
+      "weight": 0.0125
+    },
+    {
+      "name": "富邦金",
+      "symbol": "2881",
+      "weight": 0.012
+    },
+    {
+      "name": "中信金",
+      "symbol": "2891",
+      "weight": 0.0115
+    }
+  ]
+}

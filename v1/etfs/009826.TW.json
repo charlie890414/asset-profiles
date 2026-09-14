@@ -1,0 +1,287 @@
+{
+  "as_of_date": "2026-09-10",
+  "country_weights": [
+    {
+      "country": "US",
+      "country_code": "US",
+      "weight": 0.6454
+    },
+    {
+      "country": "JP",
+      "country_code": "JP",
+      "weight": 0.0593
+    },
+    {
+      "country": "GB",
+      "country_code": "GB",
+      "weight": 0.0343
+    },
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 0.0328
+    },
+    {
+      "country": "CA",
+      "country_code": "CA",
+      "weight": 0.0313
+    },
+    {
+      "country": "KR",
+      "country_code": "KR",
+      "weight": 0.024
+    },
+    {
+      "country": "FR",
+      "country_code": "FR",
+      "weight": 0.022
+    },
+    {
+      "country": "CN",
+      "country_code": "CN",
+      "weight": 0.0213
+    },
+    {
+      "country": "CH",
+      "country_code": "CH",
+      "weight": 0.0203
+    },
+    {
+      "country": "DE",
+      "country_code": "DE",
+      "weight": 0.0203
+    },
+    {
+      "country": "AU",
+      "country_code": "AU",
+      "weight": 0.016
+    },
+    {
+      "country": "NL",
+      "country_code": "NL",
+      "weight": 0.0114
+    },
+    {
+      "country": "IT",
+      "country_code": "IT",
+      "weight": 0.0083
+    },
+    {
+      "country": "SE",
+      "country_code": "SE",
+      "weight": 0.0083
+    },
+    {
+      "country": "IN",
+      "country_code": "IN",
+      "weight": 0.0074
+    },
+    {
+      "country": "HK",
+      "country_code": "HK",
+      "weight": 0.0058
+    },
+    {
+      "country": "SG",
+      "country_code": "SG",
+      "weight": 0.0043
+    },
+    {
+      "country": "DK",
+      "country_code": "DK",
+      "weight": 0.0039
+    },
+    {
+      "country": "ZA",
+      "country_code": "ZA",
+      "weight": 0.0036
+    },
+    {
+      "country": "IE",
+      "country_code": "IE",
+      "weight": 0.0035
+    },
+    {
+      "country": "FI",
+      "country_code": "FI",
+      "weight": 0.003
+    },
+    {
+      "country": "BE",
+      "country_code": "BE",
+      "weight": 0.0027
+    },
+    {
+      "country": "IL",
+      "country_code": "IL",
+      "weight": 0.0022
+    },
+    {
+      "country": "MX",
+      "country_code": "MX",
+      "weight": 0.0019
+    },
+    {
+      "country": "NO",
+      "country_code": "NO",
+      "weight": 0.0017
+    },
+    {
+      "country": "PL",
+      "country_code": "PL",
+      "weight": 0.0013
+    },
+    {
+      "country": "AT",
+      "country_code": "AT",
+      "weight": 0.0009
+    },
+    {
+      "country": "GR",
+      "country_code": "GR",
+      "weight": 0.0009
+    },
+    {
+      "country": "PE",
+      "country_code": "PE",
+      "weight": 0.0006
+    },
+    {
+      "country": "PT",
+      "country_code": "PT",
+      "weight": 0.0006
+    },
+    {
+      "country": "NZ",
+      "country_code": "NZ",
+      "weight": 0.0005
+    },
+    {
+      "country": "ES",
+      "country_code": "ES",
+      "weight": 0.0002
+    }
+  ],
+  "holdings_count": 1730,
+  "issuer": "BlackRock",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "009826.TW"
+    },
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "009826"
+    }
+  ],
+  "name": "BlackRock iShares Global All Cap ETF",
+  "primary_symbol": "009826.TW",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:45Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "BlackRock official",
+    "source_url": "https://www.blackrock.com/tw/products/351824/fund/1480664180144.ajax?dataType=fund&fileName=009826_holdings&fileType=csv"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.2995
+    },
+    {
+      "sector": "Financials",
+      "weight": 0.1872
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.1092
+    },
+    {
+      "sector": "Consumer Discretionary",
+      "weight": 0.0849
+    },
+    {
+      "sector": "Health Care",
+      "weight": 0.0849
+    },
+    {
+      "sector": "Communication Services",
+      "weight": 0.0739
+    },
+    {
+      "sector": "Consumer Staples",
+      "weight": 0.0461
+    },
+    {
+      "sector": "Energy",
+      "weight": 0.0398
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0361
+    },
+    {
+      "sector": "Utilities",
+      "weight": 0.0202
+    },
+    {
+      "sector": "Real Estate",
+      "weight": 0.0182
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "NVIDIA",
+      "symbol": "NVDA",
+      "weight": 0.0478
+    },
+    {
+      "name": "APPLE",
+      "symbol": "AAPL",
+      "weight": 0.0406
+    },
+    {
+      "name": "MICROSOFT",
+      "symbol": "MSFT",
+      "weight": 0.032
+    },
+    {
+      "name": "AMAZON.COM INC",
+      "symbol": "AMZN",
+      "weight": 0.0225
+    },
+    {
+      "name": "TAIWAN SEMICONDUCTOR MANUFACTURING",
+      "symbol": "2330",
+      "weight": 0.0176
+    },
+    {
+      "name": "ALPHABET CLASS A",
+      "symbol": "GOOGL",
+      "weight": 0.0168
+    },
+    {
+      "name": "BROADCOM INC",
+      "symbol": "AVGO",
+      "weight": 0.0165
+    },
+    {
+      "name": "ALPHABET CLASS C",
+      "symbol": "GOOG",
+      "weight": 0.0134
+    },
+    {
+      "name": "META PLATFORMS CLASS A",
+      "symbol": "META",
+      "weight": 0.0124
+    },
+    {
+      "name": "ISHARES MSCI SPAIN ETF",
+      "symbol": "EWP",
+      "weight": 0.0089
+    }
+  ]
+}

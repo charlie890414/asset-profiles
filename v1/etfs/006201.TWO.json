@@ -1,0 +1,109 @@
+{
+  "as_of_date": "2026-09-11",
+  "country_weights": [
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 1.0
+    }
+  ],
+  "holdings_count": 50,
+  "isin": "TW0000062017",
+  "issuer": "Yuanta",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "TWD",
+      "exchange_mic": "ROCO",
+      "symbol": "006201.TWO"
+    },
+    {
+      "currency": "TWD",
+      "exchange_mic": "ROCO",
+      "symbol": "006201"
+    }
+  ],
+  "name": "元大櫃買ETF傘型證券投資信託基金之富櫃50證券投資信託基金",
+  "primary_symbol": "006201.TWO",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:43Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "Yuanta official",
+    "source_url": "https://www.yuantaetfs.com/product/detail/006201/ratio"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.9087
+    },
+    {
+      "sector": "Communication Services",
+      "weight": 0.0306
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.0292
+    },
+    {
+      "sector": "Consumer Discretionary",
+      "weight": 0.0178
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0137
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "信驊",
+      "symbol": "5274",
+      "weight": 0.1063
+    },
+    {
+      "name": "旺矽",
+      "symbol": "6223",
+      "weight": 0.0884
+    },
+    {
+      "name": "台燿",
+      "symbol": "6274",
+      "weight": 0.0678
+    },
+    {
+      "name": "群聯",
+      "symbol": "8299",
+      "weight": 0.0522
+    },
+    {
+      "name": "聯亞",
+      "symbol": "3081",
+      "weight": 0.0474
+    },
+    {
+      "name": "環球晶",
+      "symbol": "6488",
+      "weight": 0.0386
+    },
+    {
+      "name": "穩懋",
+      "symbol": "3105",
+      "weight": 0.032
+    },
+    {
+      "name": "力旺",
+      "symbol": "3529",
+      "weight": 0.0314
+    },
+    {
+      "name": "世界",
+      "symbol": "5347",
+      "weight": 0.0312
+    },
+    {
+      "name": "鈊象",
+      "symbol": "3293",
+      "weight": 0.0297
+    }
+  ]
+}

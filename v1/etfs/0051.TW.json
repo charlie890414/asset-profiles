@@ -1,0 +1,121 @@
+{
+  "as_of_date": "2026-09-11",
+  "country_weights": [
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 1.0
+    }
+  ],
+  "holdings_count": 100,
+  "isin": "TW0000051002",
+  "issuer": "Yuanta",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "0051.TW"
+    },
+    {
+      "currency": "TWD",
+      "exchange_mic": "XTAI",
+      "symbol": "0051"
+    }
+  ],
+  "name": "元大台灣中型100證券投資信託基金",
+  "primary_symbol": "0051.TW",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:41Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "Yuanta official",
+    "source_url": "https://www.yuantaetfs.com/product/detail/0051/ratio"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.5332
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.1974
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0979
+    },
+    {
+      "sector": "Financials",
+      "weight": 0.0696
+    },
+    {
+      "sector": "Health Care",
+      "weight": 0.043
+    },
+    {
+      "sector": "Consumer Discretionary",
+      "weight": 0.0357
+    },
+    {
+      "sector": "Consumer Staples",
+      "weight": 0.0138
+    },
+    {
+      "sector": "Real Estate",
+      "weight": 0.0094
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "藥華藥",
+      "symbol": "6446",
+      "weight": 0.0341
+    },
+    {
+      "name": "群創",
+      "symbol": "3481",
+      "weight": 0.0295
+    },
+    {
+      "name": "瑞昱",
+      "symbol": "2379",
+      "weight": 0.0291
+    },
+    {
+      "name": "聯詠",
+      "symbol": "3034",
+      "weight": 0.0264
+    },
+    {
+      "name": "景碩",
+      "symbol": "3189",
+      "weight": 0.0229
+    },
+    {
+      "name": "台塑",
+      "symbol": "1301",
+      "weight": 0.0226
+    },
+    {
+      "name": "台化",
+      "symbol": "1326",
+      "weight": 0.0199
+    },
+    {
+      "name": "華通",
+      "symbol": "2313",
+      "weight": 0.0196
+    },
+    {
+      "name": "力積電",
+      "symbol": "6770",
+      "weight": 0.0194
+    },
+    {
+      "name": "健鼎",
+      "symbol": "3044",
+      "weight": 0.0189
+    }
+  ]
+}

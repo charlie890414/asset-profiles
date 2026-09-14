@@ -1,11 +1,78 @@
 {
   "counts": {
-    "etfs": 0,
+    "etfs": 8,
     "stocks": 0
   },
-  "generated_at": "2026-09-13T15:45:02Z",
-  "isins": {},
-  "next_refresh_at": "2026-09-20T15:45:02.220608+00:00",
+  "generated_at": "2026-09-14T21:19:45Z",
+  "isins": {
+    "TW0000050004": "etfs/0050.TW.json",
+    "TW0000051002": "etfs/0051.TW.json",
+    "TW0000062017": "etfs/006201.TWO.json"
+  },
+  "next_refresh_at": "2026-09-21T21:19:45Z",
   "schema_version": "1.0.0",
-  "symbols": {}
+  "symbols": {
+    "0050": {
+      "isin": "TW0000050004",
+      "kind": "etf",
+      "path": "etfs/0050.TW.json"
+    },
+    "0050.TW": {
+      "isin": "TW0000050004",
+      "kind": "etf",
+      "path": "etfs/0050.TW.json"
+    },
+    "0051": {
+      "isin": "TW0000051002",
+      "kind": "etf",
+      "path": "etfs/0051.TW.json"
+    },
+    "0051.TW": {
+      "isin": "TW0000051002",
+      "kind": "etf",
+      "path": "etfs/0051.TW.json"
+    },
+    "006201": {
+      "isin": "TW0000062017",
+      "kind": "etf",
+      "path": "etfs/006201.TWO.json"
+    },
+    "006201.TWO": {
+      "isin": "TW0000062017",
+      "kind": "etf",
+      "path": "etfs/006201.TWO.json"
+    },
+    "006208": {
+      "kind": "etf",
+      "path": "etfs/006208.TW.json"
+    },
+    "006208.TW": {
+      "kind": "etf",
+      "path": "etfs/006208.TW.json"
+    },
+    "009826": {
+      "kind": "etf",
+      "path": "etfs/009826.TW.json"
+    },
+    "009826.TW": {
+      "kind": "etf",
+      "path": "etfs/009826.TW.json"
+    },
+    "SPYM": {
+      "kind": "etf",
+      "path": "etfs/SPYM.json"
+    },
+    "VT": {
+      "kind": "etf",
+      "path": "etfs/VT.json"
+    },
+    "VWRA": {
+      "kind": "etf",
+      "path": "etfs/VWRA.L.json"
+    },
+    "VWRA.L": {
+      "kind": "etf",
+      "path": "etfs/VWRA.L.json"
+    }
+  }
 }

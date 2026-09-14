@@ -1,0 +1,362 @@
+{
+  "as_of_date": "2026-07-31",
+  "country_weights": [
+    {
+      "country": "US",
+      "country_code": "US",
+      "weight": 0.6179
+    },
+    {
+      "country": "JP",
+      "country_code": "JP",
+      "weight": 0.0603
+    },
+    {
+      "country": "GB",
+      "country_code": "GB",
+      "weight": 0.0333
+    },
+    {
+      "country": "TW",
+      "country_code": "TW",
+      "weight": 0.0323
+    },
+    {
+      "country": "CA",
+      "country_code": "CA",
+      "weight": 0.0303
+    },
+    {
+      "country": "HK",
+      "country_code": "HK",
+      "weight": 0.0261
+    },
+    {
+      "country": "KR",
+      "country_code": "KR",
+      "weight": 0.0233
+    },
+    {
+      "country": "CH",
+      "country_code": "CH",
+      "weight": 0.0208
+    },
+    {
+      "country": "FR",
+      "country_code": "FR",
+      "weight": 0.0208
+    },
+    {
+      "country": "DE",
+      "country_code": "DE",
+      "weight": 0.0188
+    },
+    {
+      "country": "IN",
+      "country_code": "IN",
+      "weight": 0.0166
+    },
+    {
+      "country": "AU",
+      "country_code": "AU",
+      "weight": 0.0152
+    },
+    {
+      "country": "NL",
+      "country_code": "NL",
+      "weight": 0.0115
+    },
+    {
+      "country": "ES",
+      "country_code": "ES",
+      "weight": 0.0088
+    },
+    {
+      "country": "IT",
+      "country_code": "IT",
+      "weight": 0.0082
+    },
+    {
+      "country": "SE",
+      "country_code": "SE",
+      "weight": 0.0073
+    },
+    {
+      "country": "CN",
+      "country_code": "CN",
+      "weight": 0.0062
+    },
+    {
+      "country": "SG",
+      "country_code": "SG",
+      "weight": 0.0039
+    },
+    {
+      "country": "ZA",
+      "country_code": "ZA",
+      "weight": 0.0037
+    },
+    {
+      "country": "DK",
+      "country_code": "DK",
+      "weight": 0.0036
+    },
+    {
+      "country": "BR",
+      "country_code": "BR",
+      "weight": 0.0034
+    },
+    {
+      "country": "SA",
+      "country_code": "SA",
+      "weight": 0.0032
+    },
+    {
+      "country": "IL",
+      "country_code": "IL",
+      "weight": 0.0031
+    },
+    {
+      "country": "BE",
+      "country_code": "BE",
+      "weight": 0.0025
+    },
+    {
+      "country": "FI",
+      "country_code": "FI",
+      "weight": 0.0025
+    },
+    {
+      "country": "MX",
+      "country_code": "MX",
+      "weight": 0.0022
+    },
+    {
+      "country": "AE",
+      "country_code": "AE",
+      "weight": 0.0016
+    },
+    {
+      "country": "MY",
+      "country_code": "MY",
+      "weight": 0.0016
+    },
+    {
+      "country": "NO",
+      "country_code": "NO",
+      "weight": 0.0014
+    },
+    {
+      "country": "PL",
+      "country_code": "PL",
+      "weight": 0.0011
+    },
+    {
+      "country": "TR",
+      "country_code": "TR",
+      "weight": 0.001
+    },
+    {
+      "country": "GR",
+      "country_code": "GR",
+      "weight": 0.0009
+    },
+    {
+      "country": "AT",
+      "country_code": "AT",
+      "weight": 0.0008
+    },
+    {
+      "country": "IE",
+      "country_code": "IE",
+      "weight": 0.0008
+    },
+    {
+      "country": "ID",
+      "country_code": "ID",
+      "weight": 0.0007
+    },
+    {
+      "country": "QA",
+      "country_code": "QA",
+      "weight": 0.0007
+    },
+    {
+      "country": "CL",
+      "country_code": "CL",
+      "weight": 0.0006
+    },
+    {
+      "country": "KW",
+      "country_code": "KW",
+      "weight": 0.0006
+    },
+    {
+      "country": "HU",
+      "country_code": "HU",
+      "weight": 0.0005
+    },
+    {
+      "country": "NZ",
+      "country_code": "NZ",
+      "weight": 0.0005
+    },
+    {
+      "country": "PH",
+      "country_code": "PH",
+      "weight": 0.0004
+    },
+    {
+      "country": "PT",
+      "country_code": "PT",
+      "weight": 0.0004
+    },
+    {
+      "country": "CZ",
+      "country_code": "CZ",
+      "weight": 0.0002
+    },
+    {
+      "country": "CO",
+      "country_code": "CO",
+      "weight": 0.0001
+    },
+    {
+      "country": "EG",
+      "country_code": "EG",
+      "weight": 0.0001
+    },
+    {
+      "country": "IS",
+      "country_code": "IS",
+      "weight": 0.0001
+    },
+    {
+      "country": "RO",
+      "country_code": "RO",
+      "weight": 0.0001
+    }
+  ],
+  "holdings_count": 4285,
+  "issuer": "Vanguard",
+  "kind": "etf",
+  "listings": [
+    {
+      "currency": "USD",
+      "exchange_mic": "XLON",
+      "symbol": "VWRA.L"
+    },
+    {
+      "currency": "USD",
+      "exchange_mic": "XLON",
+      "symbol": "VWRA"
+    }
+  ],
+  "name": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+  "primary_symbol": "VWRA.L",
+  "provenance": {
+    "fetched_at": "2026-09-13T17:24:53Z",
+    "license": "Issuer terms; rights not assumed",
+    "source": "Vanguard official",
+    "source_url": "https://www.vanguard.co.uk/gpx/graphql"
+  },
+  "schema_version": "1.0.0",
+  "sector_weights": [
+    {
+      "sector": "Information Technology",
+      "weight": 0.3035
+    },
+    {
+      "sector": "Financials",
+      "weight": 0.1736
+    },
+    {
+      "sector": "Industrials",
+      "weight": 0.1117
+    },
+    {
+      "sector": "Consumer Discretionary",
+      "weight": 0.0917
+    },
+    {
+      "sector": "Health Care",
+      "weight": 0.0837
+    },
+    {
+      "sector": "Communication Services",
+      "weight": 0.0802
+    },
+    {
+      "sector": "Consumer Staples",
+      "weight": 0.0489
+    },
+    {
+      "sector": "Energy",
+      "weight": 0.0392
+    },
+    {
+      "sector": "Materials",
+      "weight": 0.0372
+    },
+    {
+      "sector": "Utilities",
+      "weight": 0.0255
+    },
+    {
+      "sector": "Real Estate",
+      "weight": 0.0048
+    }
+  ],
+  "top_holdings": [
+    {
+      "name": "NVIDIA Corp",
+      "symbol": "NVDA",
+      "weight": 0.04443
+    },
+    {
+      "name": "Apple Inc",
+      "symbol": "AAPL",
+      "weight": 0.0423463
+    },
+    {
+      "name": "Microsoft Corp",
+      "symbol": "MSFT",
+      "weight": 0.0327071
+    },
+    {
+      "name": "Amazon.com Inc",
+      "symbol": "AMZN",
+      "weight": 0.0249844
+    },
+    {
+      "name": "Alphabet Inc",
+      "symbol": "GOOGL",
+      "weight": 0.0199114
+    },
+    {
+      "name": "Taiwan Semiconductor Manufacturing Co Ltd",
+      "symbol": "2330",
+      "weight": 0.0172824
+    },
+    {
+      "name": "Broadcom Inc",
+      "symbol": "AVGO",
+      "weight": 0.0171819
+    },
+    {
+      "name": "Alphabet Inc",
+      "symbol": "GOOG",
+      "weight": 0.0158494
+    },
+    {
+      "name": "Meta Platforms Inc",
+      "symbol": "META",
+      "weight": 0.0116065
+    },
+    {
+      "name": "JPMorgan Chase & Co",
+      "symbol": "JPM",
+      "weight": 0.0088897
+    }
+  ]
+}
