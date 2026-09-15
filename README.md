@@ -4,15 +4,15 @@
 
 ## 目前可用範圍
 
-首批設定：0050、0051、006201、006208、009826、SPYM、BOXX、VT、VWRA、FWRA、VALU。代號來源是 2026-09-13 的持有紀錄查詢；部分帳戶回應仍有截斷標記，清單不保證涵蓋所有資產。設定不含帳戶、持有數量、成本或 Wealthfolio 資產 ID。
+首批設定：0050、0051、006201、006208、009826、SPYM、VT、VWRA、FWRA、VALU。代號來源是 2026-09-13 的持有紀錄查詢；部分帳戶回應仍有截斷標記，清單不保證涵蓋所有資產。設定不含帳戶、持有數量、成本或 Wealthfolio 資產 ID。BOXX 刻意排除，不納入定期更新範圍。
 
-已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard 分頁 GraphQL，以及官方產品 metadata fallback。11 檔都可產生草稿，但不是每檔的每個分類欄位都完整。最新逐檔結果見 [review/review.md](review/review.md)。
+已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard 分頁 GraphQL，以及官方產品 metadata fallback。現行 10 檔都可產生草稿，但不是每檔的每個分類欄位都完整。最新逐檔結果見 [review/review.md](review/review.md)。
 
 尚未完成：
 
 - VALU：Vanguard 官方頁面目前回報持股明細暫不可用，保留 `metadata_only`，不把全球指數敘述冒充實際權重。
 - FWRA：已下載官方 factsheet；完整持股解析尚未實作，保留 `metadata_only`，不把 Others 當已知國家或產業。
-- BOXX：已擷取官方頁面；有正負部位的選擇權、抵押品與現金模型尚未實作，保留 `metadata_only`，不套用一般股票的 GICS。
+- BOXX：刻意排除，不納入本專案的 ETF 更新清單；其選擇權／現金策略資料保留在來源研究筆記中。
 - MoneyDJ、Morningstar、justETF、ETF.com、VettaFi、SEC N-PORT 尚未實作；目前不宣稱已支援這些備援來源。
 - 不含 Wealthfolio 自動同步 API。要寫入使用者分類，仍須另行取得即時資產／taxonomy IDs、原配置與確認。
 
