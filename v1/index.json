@@ -1,15 +1,16 @@
 {
   "counts": {
-    "etfs": 8,
+    "etfs": 10,
     "stocks": 0
   },
-  "generated_at": "2026-09-14T21:19:45Z",
+  "generated_at": "2026-09-15T19:57:46Z",
   "isins": {
+    "IE000716YHJ7": "etfs/FWRA.L.json",
     "TW0000050004": "etfs/0050.TW.json",
     "TW0000051002": "etfs/0051.TW.json",
     "TW0000062017": "etfs/006201.TWO.json"
   },
-  "next_refresh_at": "2026-09-21T21:19:45Z",
+  "next_refresh_at": "2026-09-22T19:57:46Z",
   "schema_version": "1.0.0",
   "symbols": {
     "0050": {
@@ -58,9 +59,27 @@
       "kind": "etf",
       "path": "etfs/009826.TW.json"
     },
+    "FWRA": {
+      "isin": "IE000716YHJ7",
+      "kind": "etf",
+      "path": "etfs/FWRA.L.json"
+    },
+    "FWRA.L": {
+      "isin": "IE000716YHJ7",
+      "kind": "etf",
+      "path": "etfs/FWRA.L.json"
+    },
     "SPYM": {
       "kind": "etf",
       "path": "etfs/SPYM.json"
+    },
+    "VALU": {
+      "kind": "etf",
+      "path": "etfs/VALU.L.json"
+    },
+    "VALU.L": {
+      "kind": "etf",
+      "path": "etfs/VALU.L.json"
     },
     "VT": {
       "kind": "etf",

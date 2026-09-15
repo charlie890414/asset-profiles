@@ -215,9 +215,10 @@
       "sources": [
         {
           "adapter": "vanguard",
-          "url": "https://www.vanguard.co.uk/gpx/graphql",
+          "url": "https://global.vanguard.com/gpx/graphql",
           "portfolio_id": "E161",
-          "name_contains": "Vanguard FTSE Global All-Cap UCITS ETF USD Acc"
+          "name_contains": "Vanguard FTSE Global All-Cap UCITS ETF USD Acc",
+          "consumer_id": "de7"
         },
         {
           "adapter": "vanguard",
@@ -256,13 +257,21 @@
       ],
       "sources": [
         {
+          "adapter": "invesco",
+          "url": "https://dng-api.invesco.com/cache/v1/accounts/en_GB/shareclasses/IE000716YHJ7/holdings/index?idType=isin&loadType=initial",
+          "sector_url": "https://dng-api.invesco.com/cache/v1/accounts/en_GB/shareclasses/IE000716YHJ7/weightedHoldings/fund?idType=isin&breakdown=sector&audienceType=Financial%20Professional&productType=ETF&productCode=ETF&replicationMethod=Physical",
+          "country_url": "https://dng-api.invesco.com/cache/v1/accounts/en_GB/shareclasses/IE000716YHJ7/weightedHoldings/fund?idType=isin&breakdown=country&audienceType=Financial%20Professional&productType=ETF&productCode=ETF&replicationMethod=Physical",
+          "isin": "IE000716YHJ7",
+          "description": "Official Invesco holdings index and same-date sector/country aggregate APIs."
+        },
+        {
           "adapter": "metadata",
           "url": "https://www.invesco.com/content/dam/invesco/emea/en/product-documents/etf/share-class/factsheet/IE000716YHJ7_factsheet_en.pdf",
           "as_of_date": "2026-07-31",
           "isin": "IE000716YHJ7",
           "asset_class": "Equity",
           "domicile": "IE",
-          "description": "Official factsheet contains fund metadata but no complete holding allocation."
+          "description": "Official factsheet fallback when the holdings API is unavailable."
         }
       ]
     }

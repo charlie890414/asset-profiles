@@ -6,12 +6,12 @@
 
 首批設定：0050、0051、006201、006208、009826、SPYM、VT、VWRA、FWRA、VALU。代號來源是 2026-09-13 的持有紀錄查詢；部分帳戶回應仍有截斷標記，清單不保證涵蓋所有資產。設定不含帳戶、持有數量、成本或 Wealthfolio 資產 ID。BOXX 刻意排除，不納入定期更新範圍。
 
-已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard 分頁 GraphQL，以及官方產品 metadata fallback。現行 10 檔都可產生草稿，但不是每檔的每個分類欄位都完整。最新逐檔結果見 [review/review.md](review/review.md)。
+已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard Global 分頁 GraphQL、Invesco 官方 holdings／aggregate API，以及官方產品 metadata fallback。現行 10 檔都可產生草稿；最新逐檔結果見 [review/review.md](review/review.md)。
 
-尚未完成：
+目前注意事項：
 
-- VALU：Vanguard 官方頁面目前回報持股明細暫不可用，保留 `metadata_only`，不把全球指數敘述冒充實際權重。
-- FWRA：已下載官方 factsheet；完整持股解析尚未實作，保留 `metadata_only`，不把 Others 當已知國家或產業。
+- VALU：使用 Vanguard Global GraphQL 的完整游標分頁（2026-08-31），以 `securityTypes=null` 取得 API 回報的 6,743 筆，並檢查基金名稱、日期與分頁終點。
+- FWRA：使用 Invesco 官方 holdings index（2,292 筆，2026-09-14）及同日 sector/country aggregate；`Other` 殘餘保留為明確分類列，不展開猜測。
 - BOXX：刻意排除，不納入本專案的 ETF 更新清單；其選擇權／現金策略資料保留在來源研究筆記中。
 - MoneyDJ、Morningstar、justETF、ETF.com、VettaFi、SEC N-PORT 尚未實作；目前不宣稱已支援這些備援來源。
 - 不含 Wealthfolio 自動同步 API。要寫入使用者分類，仍須另行取得即時資產／taxonomy IDs、原配置與確認。
@@ -57,7 +57,7 @@ python -m venv .venv
 
 ## 配置語意與保護
 
-- 產業與國家是**股票部位穿透曝險**，不是 ETF 法人本身的產業，也不是整檔 ETF 的 NAV 配置。相容 v1 不含分母欄位，因此發布端必須向消費端說明此約定；完整語意保存在審核 metadata。
+- 產業與國家是**股票部位穿透曝險**，不是 ETF 法人本身的產業，也不是整檔 ETF 的 NAV 配置。相容 v1 不含分母欄位，因此發布端必須向消費端說明此約定；完整語意保存在審核 metadata。發行商 aggregate 的 `Other` 會保留在 v1；它不是 GICS 產業或可識別國家。
 - 元大按官方四捨五入股票權重作分母；富邦、BlackRock、Vanguard 按股票市值作分母。SSGA 直接使用官方產業表，與持股日期必須一致。
 - 台灣本土股票型 ETF 的國家維度是投資市場 Taiwan，不等於公司註冊地；國際來源使用發行商 Location 或 Bloomberg ISO country。不能無條件跨這些口徑比較。
 - 只在完整分類分母下以最大餘數法分配 10000 bp。未知產業／國家保留未配置，不將 95% 放大成 100%。不刪掉低於 0.01% 的資料再把其餘項目放大。

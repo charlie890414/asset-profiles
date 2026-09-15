@@ -11,7 +11,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from build import build, classify
 from common import basis_points, digest, safe_key, validate_profile, write_json
 from promote import promote
-from sources import metadata, parse_blackrock, parse_blackrock_xml, parse_date, vanguard
+from sources import invesco, metadata, parse_blackrock, parse_blackrock_xml, parse_date, vanguard
 from validate import validate_tree
 
 ENTRY = {'ticker':'TEST','symbol':'TEST','name':'Test ETF','issuer':'Test issuer',
@@ -144,6 +144,33 @@ class PipelineTests(unittest.TestCase):
         profile=classify(ENTRY,raw(),EVIDENCE)['profile']
         profile['sector_weights'][0]['sector']='ICB Technology'
         with self.assertRaises(ValueError):validate_profile(profile)
+
+    def test_direct_issuer_allocations_preserve_other_residuals(self):
+        doc=raw()
+        doc['direct_sectors']={'Information Technology':.8,'Other':.2}
+        doc['direct_countries']={'US':.7,'Other':.3}
+        result=classify(ENTRY,doc,EVIDENCE)
+        self.assertEqual({r['sector'] for r in result['profile']['sector_weights']},{'Information Technology','Other'})
+        other=next(r for r in result['profile']['country_weights'] if r['country']=='Other')
+        self.assertIsNone(other['country_code'])
+
+    def test_invesco_adapter_reads_same_date_aggregates(self):
+        urls={'holdings':'https://example.org/holdings','sector':'https://example.org/sector','country':'https://example.org/country'}
+        documents={
+            urls['holdings']:{'isin':'IE000716YHJ7','effectiveDate':'2026-09-14',
+                              'holdings':[{'name':'A','isin':'US0000000001','cusip':'000000001','weight':99.9},
+                                          {'name':'Cash and/or Derivatives','weight':.1}]},
+            urls['sector']:{'isin':'IE000716YHJ7','effectiveDate':'2026-09-14',
+                            'holdingWeights':[{'name':'informationTechnology','value':90}, {'name':'other','value':10}]},
+            urls['country']:{'isin':'IE000716YHJ7','effectiveDate':'2026-09-14',
+                             'holdingWeights':[{'name':'UnitedStates','value':90}, {'name':'Other','value':10}]},
+        }
+        class Fake:
+            def get(self,url,*args,**kwargs): return json.dumps(documents[url]).encode()
+        result=invesco({'name':'FWRA','isin':'IE000716YHJ7'}, {'url':urls['holdings'],'sector_url':urls['sector'],'country_url':urls['country'],'isin':'IE000716YHJ7'}, Fake())
+        self.assertEqual(result['as_of_date'],'2026-09-14')
+        self.assertEqual(result['holdings'][0]['isin'],'US0000000001')
+        self.assertEqual(result['direct_sectors']['Other'],.1)
 
     def test_vanguard_repeated_cursor_rejected(self):
         page={'data':{'funds':[{'profile':{'fundFullName':'Test'}}], 'borHoldings':[{'holdings':{'items':[], 'lastItemKey':'repeat','totalHoldings':2}}]}}

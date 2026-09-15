@@ -26,7 +26,7 @@ class Fetcher:
         self.cache, self.offline = Path(cache), offline
         self.evidence = []
 
-    def get(self, url, body=None):
+    def get(self, url, body=None, headers=None):
         if not url.startswith('https://'):
             raise ValueError('Sources must use HTTPS')
         data = json.dumps(body).encode() if body is not None else None
@@ -41,13 +41,15 @@ class Fetcher:
             # a Subject Key Identifier, which Python 3.13 strict mode rejects.
             context = ssl.create_default_context()
             context.verify_flags &= ~ssl.VERIFY_X509_STRICT
-            headers = {'User-Agent': 'Mozilla/5.0 (compatible; ETFProfileResearch/1.0)',
-                       'Accept': '*/*'}
+            request_headers = {'User-Agent': 'Mozilla/5.0 (compatible; ETFProfileResearch/1.0)',
+                               'Accept': '*/*'}
+            if headers:
+                request_headers.update(headers)
             if data is not None:
-                headers['Content-Type'] = 'application/json'
+                request_headers['Content-Type'] = 'application/json'
             if url == 'https://www.vanguard.co.uk/gpx/graphql':
-                headers['X-Consumer-ID'] = 'uk2'  # Public website client identifier.
-            request = urllib.request.Request(url, data=data, headers=headers)
+                request_headers['X-Consumer-ID'] = 'uk2'  # Public website client identifier.
+            request = urllib.request.Request(url, data=data, headers=request_headers)
             for attempt in range(3):
                 try:
                     with urllib.request.urlopen(request, context=context, timeout=40) as response:
@@ -264,9 +266,15 @@ def vanguard(entry, source, fetch):
         request['query'] = request['query'].replace('holdings(limit:', 'delayeredHoldings(limit:')
     request['variables']['portIds'] = [source['portfolio_id']]
     request['variables']['lastItemKey'] = None
+    request['variables']['securityTypes'] = source.get('security_types')
     items, cursors, dates = [], set(), set()
     for _ in range(40):
-        response = json.loads(fetch.get(source['url'], request))
+        request_headers = {}
+        if source.get('consumer_id'):
+            request_headers = {'X-Consumer-ID': source['consumer_id'],
+                               'apollographql-client-name': 'gpx'}
+        response = json.loads(fetch.get(source['url'], request, headers=request_headers) if request_headers
+                              else fetch.get(source['url'], request))
         if response.get('errors'):
             raise ValueError(f"Vanguard API errors: {response['errors']}")
         profile = response['data']['funds'][0]['profile']
@@ -299,6 +307,84 @@ def vanguard(entry, source, fetch):
     return {'as_of_date':dates.pop(), 'name':profile['fundFullName'], 'holdings':holdings,
             'complete_holdings':True, 'sector_taxonomy':'GICS (gicsSectorDescription, not ICB)',
             'country_basis':'bloombergIsoCountry', 'denominator':'equity market value', 'issues':[]}
+
+
+def invesco(entry, source, fetch):
+    """Read Invesco's official UCITS holdings and aggregate allocation APIs."""
+    holdings_doc = json.loads(fetch.get(source['url']))
+    isin = source.get('isin') or entry.get('isin')
+    if holdings_doc.get('isin') and isin and holdings_doc['isin'] != isin:
+        raise ValueError('Invesco identity mismatch')
+    as_of = parse_date(holdings_doc.get('effectiveDate'))
+    rows = holdings_doc.get('holdings')
+    if not isinstance(rows, list) or not rows:
+        raise ValueError('Empty Invesco holdings')
+    holdings = []
+    for row in rows:
+        if not isinstance(row, dict) or 'weight' not in row or 'name' not in row:
+            raise ValueError('Malformed Invesco holding')
+        weight = number(row['weight']) / 100
+        if weight < 0:
+            raise ValueError('Negative Invesco holding weight')
+        security_isin = row.get('isin')
+        holdings.append({'symbol': row.get('ticker') or None, 'isin': security_isin,
+                         'cusip': row.get('cusip'), 'name': row['name'],
+                         'weight': float(weight), 'value': float(weight),
+                         'country': None, 'sector': None,
+                         'equity': bool(security_isin)})
+    total_weight = sum(number(h['weight']) for h in holdings)
+    if total_weight <= 0 or total_weight > number('1.005'):
+        raise ValueError(f'Invalid Invesco holdings total: {total_weight}')
+
+    sector_names = {
+        'informationTechnology': 'Information Technology',
+        'financials': 'Financials', 'industrials': 'Industrials',
+        'consumerDiscretionary': 'Consumer Discretionary',
+        'healthCare': 'Health Care', 'communicationServices': 'Communication Services',
+        'consumerStaples': 'Consumer Staples', 'energy': 'Energy',
+        'materials': 'Materials', 'utilities': 'Utilities', 'realEstate': 'Real Estate',
+        'other': 'Other',
+    }
+    country_names = {
+        'UnitedStates': 'US', 'Japan': 'JP', 'Taiwan': 'TW', 'Canada': 'CA',
+        'China': 'CN', 'SouthKorea': 'KR', 'UnitedKingdom': 'GB',
+        'Germany': 'DE', 'Australia': 'AU', 'Other': 'Other',
+    }
+
+    def allocation(url, names, label):
+        document = json.loads(fetch.get(url))
+        if document.get('isin') and isin and document['isin'] != isin:
+            raise ValueError(f'Invesco {label} identity mismatch')
+        if parse_date(document.get('effectiveDate')) != as_of:
+            raise ValueError(f'Invesco {label}/holdings dates differ')
+        result = {}
+        for item in document.get('holdingWeights', []):
+            key = item.get('name')
+            if key not in names:
+                raise ValueError(f'Unmapped Invesco {label}: {key!r}')
+            value = number(item.get('value')) / 100
+            if value < 0 or key in result:
+                raise ValueError(f'Invalid Invesco {label} allocation')
+            result[names[key]] = float(value)
+        if not result or sum(number(v) for v in result.values()) <= 0:
+            raise ValueError(f'Empty Invesco {label} allocation')
+        return result
+
+    sectors = allocation(source['sector_url'], sector_names, 'sector')
+    countries = allocation(source['country_url'], country_names, 'country')
+    residual = sum(h['weight'] for h in holdings if not h['equity'])
+    issues = []
+    if residual:
+        issues.append(f'Cash and/or derivatives excluded from equity denominator: {residual:.4%}')
+    return {'as_of_date': as_of, 'name': entry['name'], 'isin': isin,
+            'holdings': holdings, 'complete_holdings': True,
+            'direct_sectors': sectors, 'direct_countries': countries,
+            'classification_dates': [as_of],
+            'sector_taxonomy': 'Issuer published sector allocation (GICS buckets; Other retained)',
+            'country_basis': 'Issuer published country allocation (Other retained)',
+            'denominator': 'issuer holding weights; non-equity residual excluded',
+            'equity_fraction_nav': float(sum(h['weight'] for h in holdings if h['equity'])),
+            'issues': issues}
 
 
 def ssga(entry, source, fetch):
@@ -384,4 +470,5 @@ def evidence_only(entry, source, fetch):
 
 
 ADAPTERS = {'yuanta':yuanta, 'fubon':fubon, 'blackrock':blackrock,
-            'vanguard':vanguard, 'ssga':ssga, 'metadata': metadata, 'evidence_only':evidence_only}
+            'vanguard':vanguard, 'invesco':invesco, 'ssga':ssga,
+            'metadata': metadata, 'evidence_only':evidence_only}

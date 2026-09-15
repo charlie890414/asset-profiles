@@ -106,10 +106,13 @@ def validate_profile(profile):
         if rows is not None and (not rows or abs(sum(number(r['weight']) for r in rows)-1) > Decimal('.005')):
             raise ValueError(f'{field}: incomplete distribution')
     for row in profile.get('sector_weights', []):
-        if row['sector'] not in SECTORS:
+        if row['sector'] not in SECTORS and row['sector'] != 'Other':
             raise ValueError('Unverified GICS sector')
     for row in profile.get('country_weights', []):
-        if not country(row.get('country_code')):
+        code = row.get('country_code')
+        if code is None and row.get('country') == 'Other':
+            continue
+        if not country(code):
             raise ValueError('Unknown country code')
     if sum(number(r['weight']) for r in profile.get('top_holdings', [])) > Decimal('1.005'):
         raise ValueError('Holdings exceed NAV; derivative review required')

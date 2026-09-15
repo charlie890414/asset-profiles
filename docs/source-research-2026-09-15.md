@@ -1,12 +1,12 @@
 # ETF 缺口來源調查（2026-09-15/16）
 
-本次只做來源驗證，沒有改寫 `v1/`、沒有寫入 Wealthfolio。資料來源以發行商官方頁面與其第一方 API 為主；第三方資料只列為交叉核對，不作自動發布來源。
+來源驗證階段以發行商官方頁面與其第一方 API 為主；第三方資料只列為交叉核對，不作自動發布來源。後續已依本筆記完成 adapter、草稿驗證與 `v1/` 發布；沒有寫入 Wealthfolio。
 
 ## VALU.L（Vanguard FTSE Global All-Cap UCITS ETF USD Acc）
 
 - [Vanguard UK E161 頁面](https://www.vanguard.co.uk/professional/product/etf/equity/E161/vanguard-ftse-global-all-cap-ucits-etf-usd-acc) 的 portfolio/holdings 目前顯示暫時不可用。
-- 同一基金的 [Vanguard Global/DE E161 頁面](https://global.vanguard.com/de-de/investment-products/etf/equities/E161/ftse-global-all-cap-ucits-etf-usd-acc) 可載入 `https://global.vanguard.com/gpx/graphql` 的 `FundsHoldingsQuery`。以 `portIds=["E161"]` 分頁請求，實測回傳 `totalHoldings=6743`、最後一頁 430 筆，資料日期 `2026-08-31`；每筆含 `ticker`、`securityLongDescription`、`gicsSectorDescription`、`bloombergIsoCountry`、`marketValuePercentage`、`marketValueBaseCurrency` 與 `securityType`。
-- 查到的第一頁基金識別為 `Vanguard FTSE Global All-Cap UCITS ETF USD Acc`、ISIN `IE000VAHT5T0`。因此 VALU 可以改用 Vanguard Global GraphQL 作為第一來源；現有 `vanguard` adapter 的欄位已大致相容，只需為此端點帶上官方頁面使用的 `securityTypes` 清單並保留分頁游標。
+- 同一基金的 [Vanguard Global/DE E161 頁面](https://global.vanguard.com/de-de/investment-products/etf/equities/E161/ftse-global-all-cap-ucits-etf-usd-acc) 可載入 `https://global.vanguard.com/gpx/graphql` 的 `FundsHoldingsQuery`。以 `portIds=["E161"]` 且 `securityTypes=null` 分頁請求，實測回傳 `totalHoldings=6743`，分頁為 1,500、1,500、1,500、1,500、743 筆，資料日期 `2026-08-31`；每筆含 `ticker`、`securityLongDescription`、`gicsSectorDescription`、`bloombergIsoCountry`、`marketValuePercentage`、`marketValueBaseCurrency` 與 `securityType`。頁面顯式的 security type 清單會少回 313 筆，因此 adapter 保留 null 並以總筆數核對完整性。
+- 查到的第一頁基金識別為 `Vanguard FTSE Global All-Cap UCITS ETF USD Acc`、ISIN `IE000VAHT5T0`。因此 VALU 已改用 Vanguard Global GraphQL 作為第一來源，請求使用公開 client header `X-Consumer-ID: de7`，不涉及帳戶憑證。
 - 不應以 ESG Global All Cap、FTSE All-World 或第三方 VALL 頁面代替 E161；它們不是同一份即時持股證據。
 
 ## FWRA.L（Invesco FTSE All-World UCITS ETF USD Acc）
@@ -28,7 +28,7 @@
 
   兩個回應均為 `effectiveDate=2026-09-14`；sector 配置包含 Information Technology 30.93%、Financials 17.46% 等，country 配置包含 United States 63.59%、Japan 6.10%、Taiwan 3.25% 等。
 
-- [Invesco 官方 factsheet](https://www.invesco.com/content/dam/invesco/emea/en/product-documents/etf/share-class/factsheet/IE000716YHJ7_factsheet_en.pdf) 可作為 ISIN、物理複製、指數與基金 metadata 證據。FWRA 不再需要停留在 `metadata_only`：應新增 `invesco` adapter，讀取 holdings 與兩個 aggregate endpoint；不可只抓前十名或把 `Other` 展開猜成國家／產業。
+- [Invesco 官方 factsheet](https://www.invesco.com/content/dam/invesco/emea/en/product-documents/etf/share-class/factsheet/IE000716YHJ7_factsheet_en.pdf) 可作為 ISIN、物理複製、指數與基金 metadata 證據。FWRA 已由 `invesco` adapter 讀取 holdings 與兩個同日 aggregate endpoint；完整 holdings 的 `Cash and/or Derivatives` 以非股票殘餘排除於股票分母，sector/country 的 `Other` 原樣保留，不展開猜成國家／產業。
 - [StockAnalysis](https://stockanalysis.com/quote/lon/FWRA/holdings/)、[Trackinsight](https://www.trackinsight.com/en/fund/FWRA/holdings) 等第三方頁面可做日期與數量交叉檢查，但不應取代 Invesco 第一方 API，也不應在未確認授權與完整性前寫入發布資料。
 
 ## BOXX（Alpha Architect 1-3 Month Box ETF）
@@ -39,6 +39,6 @@
 
 ## 結論與建議順序
 
-1. 先新增 FWRA Invesco API adapter，因為已取得完整 holdings 與同日 sector/country aggregate。
-2. 將 VALU 的來源優先序改為 Vanguard Global GraphQL，再保留 UK metadata fallback；跑完整分頁與日期／identity 驗證後才產生 `ready` 草稿。
+1. FWRA 已使用 Invesco API adapter，保留完整 holdings、同日 aggregate 與殘餘項目。
+2. VALU 已使用 Vanguard Global GraphQL；跑完整分頁與日期／identity 驗證後產生 `ready` 草稿，UK metadata 作 fallback。
 3. BOXX 已依目前決策排除，不納入本專案的 ETF 更新清單；若日後重新納入，需另開 derivative-aware 資產類別工作，不與股票 GICS 分類混在一起。

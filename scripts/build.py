@@ -59,6 +59,29 @@ def classify(entry, raw, evidence, max_age_days=90):
     if age > max_age_days:
         reasons.append(f'Stale holdings: {age} days')
     for field, label, value_key in [('sector_weights','sector','sector'),('country_weights','country','country')]:
+        direct = raw.get('direct_sectors') if field == 'sector_weights' else raw.get('direct_countries')
+        if direct is not None:
+            grouped = direct
+            coverage = sum(number(v) for v in grouped.values())
+            if abs(coverage-1) > number('.005'):
+                raise ValueError(f'Incomplete direct {label} allocation')
+            complete, missing = True, []
+            bp = basis_points(grouped, normalize=True)
+            rows = []
+            for key, weight in sorted(bp.items(), key=lambda x: (-x[1], x[0])):
+                if not weight:
+                    continue
+                row = {label: key, 'weight': weight / 10000}
+                if label == 'country':
+                    row['country_code'] = None if key == 'Other' else key
+                rows.append(row)
+            partial[field] = rows
+            metadata[field] = {'coverage': float(coverage), 'unallocated_basis_points': 0,
+                               'missing_securities': [], 'complete': complete,
+                               'denominator': 'issuer published sector allocation' if label == 'sector' else 'issuer published country allocation',
+                               'denominator_value': str(denominator)}
+            profile[field] = rows
+            continue
         grouped = {}
         missing = []
         for h in equity:
@@ -72,12 +95,6 @@ def classify(entry, raw, evidence, max_age_days=90):
         # Tiny issuer rounding omissions (<=2 bp) do not warrant blocking the
         # whole profile; the unallocated amount is retained in review metadata.
         complete = raw['complete_holdings'] and (not missing or unclassified_weight <= number('0.0002'))
-        if field == 'sector_weights' and raw.get('direct_sectors'):
-            grouped = raw['direct_sectors']
-            coverage = sum(number(v) for v in grouped.values())
-            if abs(coverage-1) > number('.005'):
-                raise ValueError('Incomplete direct allocation')
-            complete, missing = True, []
         bp = basis_points(grouped, normalize=complete) if grouped else {}
         rows = [{label:key, 'weight':weight/10000, **({'country_code':key} if label == 'country' else {})}
                 for key,weight in sorted(bp.items(), key=lambda x:(-x[1],x[0])) if weight]
@@ -92,7 +109,8 @@ def classify(entry, raw, evidence, max_age_days=90):
     profile['holdings_count'] = len(holdings)
     top = sorted(equity, key=lambda h:h['weight'], reverse=True)[:10]
     if sum(number(h['weight']) for h in top) <= number('1.005'):
-        profile['top_holdings'] = [{k:v for k,v in {'symbol':h.get('symbol'), 'name':h['name'], 'weight':h['weight']}.items() if v is not None} for h in top]
+        profile['top_holdings'] = [{k:h.get(k) for k in ('symbol', 'isin', 'cusip', 'name', 'weight')
+                                   if h.get(k) is not None} for h in top]
     else:
         reasons.append('Top holding weights exceed NAV tolerance')
     validate_profile(profile)
