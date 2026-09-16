@@ -17,7 +17,11 @@ def promote(symbols, review, published):
         profile = draft['profile']
         if profile['primary_symbol'] != key or digest(profile) != draft['candidate_sha256']:
             raise ValueError('Draft identity/hash mismatch')
-        old_path = published/'etfs'/f'{key}.json'
+        kind = profile.get('kind')
+        if kind not in {'etf', 'fund'}:
+            raise ValueError(f'{key}: unsupported profile kind')
+        directory = 'funds' if kind == 'fund' else 'etfs'
+        old_path = published/directory/f'{key}.json'
         old = json.loads(old_path.read_text(encoding='utf-8')) if old_path.exists() else None
         if digest(old) != draft['base_sha256']:
             raise ValueError('Published data changed after draft; refresh review')
@@ -27,23 +31,31 @@ def promote(symbols, review, published):
             raise ValueError(f'{key}: manual override lock must be reviewed and removed first')
         if (datetime.now(timezone.utc).date()-datetime.fromisoformat(profile['as_of_date']).date()).days > 90:
             raise ValueError('Stale holdings cannot be promoted')
-        if not profile.get('country_weights') and not profile.get('sector_weights'):
+        if kind == 'etf' and not profile.get('country_weights') and not profile.get('sector_weights'):
             raise ValueError('No complete classification dimension to publish')
         validate_profile(profile)
         prepared.append((old_path,profile))
     # Validate every selected draft and index collision before changing anything.
-    all_profiles = {p.stem:json.loads(p.read_text(encoding='utf-8')) for p in (published/'etfs').glob('*.json')}
-    all_profiles.update({p.stem:profile for p,profile in prepared})
+    all_profiles = {}
+    for directory in ('etfs', 'funds'):
+        for path in (published/directory).glob('*.json'):
+            all_profiles[(directory, path.stem)] = json.loads(path.read_text(encoding='utf-8'))
+    all_profiles.update({(path.parent.name, path.stem):profile for path,profile in prepared})
     index = {'schema_version':'1.0.0','generated_at':now(),
              'next_refresh_at':(datetime.now(timezone.utc)+timedelta(days=7)).replace(microsecond=0).isoformat().replace('+00:00','Z'),
-             'counts':{'stocks':0,'etfs':len(all_profiles)},'symbols':{},'isins':{}}
-    for key, profile in all_profiles.items():
+             'counts':{'stocks':0,'etfs':0,'funds':0},'symbols':{},'isins':{}}
+    for (directory, key), profile in all_profiles.items():
         validate_profile(profile)
-        path = f'etfs/{safe_key(key)}.json'
+        kind = profile.get('kind')
+        expected_directory = 'funds' if kind == 'fund' else 'etfs'
+        if directory != expected_directory:
+            raise ValueError(f'{key}: profile kind/directory mismatch')
+        index['counts'][expected_directory] += 1
+        path = f'{directory}/{safe_key(key)}.json'
         for listing in profile['listings']:
             if listing['symbol'] in index['symbols']:
                 raise ValueError('Listing collision')
-            index['symbols'][listing['symbol']] = {'kind':'etf','path':path}
+            index['symbols'][listing['symbol']] = {'kind':kind,'path':path}
             if profile.get('isin'):
                 index['symbols'][listing['symbol']]['isin'] = profile['isin']
         if profile.get('isin'):

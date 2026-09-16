@@ -1,0 +1,40 @@
+{
+  "as_of_date": "2026-08-31",
+  "asset_class_weights": [
+    { "asset_class": "Equity", "weight": 0.775 },
+    { "asset_class": "Fixed Income", "weight": 0.1549 },
+    { "asset_class": "Other", "weight": 0.0368 },
+    { "asset_class": "Cash", "weight": 0.0333 }
+  ],
+  "classification_notes": [
+    "MoneyDJ reports underlying fund-category buckets rather than a complete GICS or country look-through.",
+    "The monthly table contains the top ten positions; it is not a complete holdings file."
+  ],
+  "isin": "TW000T3628C8",
+  "issuer": "Allianz Global Investors Taiwan",
+  "kind": "fund",
+  "listings": [
+    { "currency": "TWD", "symbol": "38552137C" }
+  ],
+  "name": "安聯四季成長組合基金-P類型-新臺幣",
+  "primary_symbol": "38552137C",
+  "provenance": {
+    "fetched_at": "2026-09-16T12:17:52Z",
+    "license": "Issuer/platform terms; rights not assumed",
+    "source": "MoneyDJ FundDJ / AllianzGI product reference",
+    "source_url": "https://www.moneydj.com/funddj/yp/yp013000.djhtm?a=ACDD100&topc="
+  },
+  "schema_version": "1.0.0",
+  "top_holdings": [
+    { "name": "Vanguard標普500指數ETF", "weight": 0.1605 },
+    { "name": "Invesco納斯達克100指數ETF", "weight": 0.1435 },
+    { "name": "元大台灣卓越50基金", "weight": 0.065 },
+    { "name": "iShares核心標普500指數ETF", "weight": 0.0644 },
+    { "name": "JPMorgan BetaBuilders美國股票ETF", "weight": 0.0483 },
+    { "name": "安聯台灣科技基金", "weight": 0.0454 },
+    { "name": "普徠仕全球焦點成長股票基金I級別(美元)", "weight": 0.0459 },
+    { "name": "施羅德環球基金系列－環球可轉換債券(美元)C-累積", "weight": 0.0375 },
+    { "name": "PIMCO新興市場債券基金-機構H級類別(累積股份)", "weight": 0.0345 },
+    { "name": "iShares核心高股利ETF", "weight": 0.0316 }
+  ]
+}

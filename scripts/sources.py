@@ -84,6 +84,137 @@ def parse_date(value):
     raise ValueError(f'Unknown source date: {value!r}')
 
 
+def _fund_soup(content):
+    """Decode domestic fund pages while tolerating UTF-8 and Big5 responses."""
+    try:
+        text = content.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        text = content.decode('cp950', errors='replace')
+    return BeautifulSoup(text, 'html.parser')
+
+
+def _fund_percent(value):
+    match = re.search(r'[-+]?\d+(?:\.\d+)?', str(value).replace(',', ''))
+    if not match:
+        return None
+    return float(number(match.group(0)) / 100)
+
+
+def _fund_date(text):
+    match = re.search(r'(?:資料(?:日期|月份)|截至|As of)[：:\s]*((?:20\d{2})[/-]\d{1,2}[/-]\d{1,2})', text, re.I)
+    return parse_date(match.group(1)) if match else None
+
+
+def _fund_table_rows(table):
+    rows = []
+    for row in table.find_all('tr'):
+        cells = row.find_all(['th', 'td'])
+        values = [cell.get_text(' ', strip=True) for cell in cells]
+        if values:
+            rows.append(values)
+    return rows
+
+
+def moneydj_fund(entry, source, fetch):
+    """Read MoneyDJ FundDJ allocation and monthly top-ten tables.
+
+    FundDJ labels the asset allocation table as ``依產業`` even when its rows
+    are underlying fund categories (US equity, bond, cash, ...).  We map only
+    those explicit buckets to asset classes and retain the original denominator
+    in the returned metadata.  GICS and country weights are never guessed from
+    a partial table.
+    """
+    content = fetch.get(source['url'])
+    soup = _fund_soup(content)
+    page_text = soup.get_text(' ', strip=True)
+    marker = source.get('name_contains') or entry.get('name_contains')
+    if marker and marker not in page_text:
+        raise ValueError('Fund identity mismatch')
+    tables = soup.find_all('table')
+    asset_rows = []
+    top_holdings = []
+    dates = []
+    page_date = _fund_date(page_text)
+    if page_date:
+        dates.append(page_date)
+    asset_aliases = {
+        '美國股票型': 'Equity', '新興亞洲股票型': 'Equity', '全球股票型': 'Equity',
+        '歐洲股票型': 'Equity', '日本股票型': 'Equity', '中國': 'Equity',
+        '趨勢產業型': 'Equity', '股票型': 'Equity', '債券型': 'Fixed Income',
+        '流動資金': 'Cash', '現金': 'Cash', '其他': 'Other',
+    }
+    for table in tables:
+        rows = _fund_table_rows(table)
+        if not rows:
+            continue
+        table_text = ' '.join(' '.join(row) for row in rows)
+        found_date = _fund_date(table_text)
+        if found_date:
+            dates.append(found_date)
+        header_index = next((index for index, row in enumerate(rows)
+                             if '產業' in ' '.join(row) and '比例' in ' '.join(row)), None)
+        holdings_header_index = next((index for index, row in enumerate(rows)
+                                      if '投資名稱' in ' '.join(row) and '比例' in ' '.join(row)), None)
+        if header_index is not None:
+            parsed = []
+            for row in rows[header_index + 1:]:
+                if len(row) < 2:
+                    continue
+                label = row[0].strip()
+                weight = _fund_percent(row[-1])
+                if label in asset_aliases and weight is not None:
+                    parsed.append((asset_aliases[label], weight))
+            if parsed:
+                asset_rows.extend(parsed)
+        if holdings_header_index is not None:
+            # A FundDJ row contains two repeated groups of name/amount/ratio/change.
+            for row in rows[holdings_header_index + 1:]:
+                for offset in range(0, len(row), 4):
+                    if offset + 2 >= len(row):
+                        continue
+                    name = row[offset].strip()
+                    weight = _fund_percent(row[offset + 2])
+                    if not name or weight is None or re.fullmatch(r'[-+]?\d[\d,.]*%?', name):
+                        continue
+                    top_holdings.append({'name': name, 'weight': weight})
+    configured = source.get('asset_class_weights')
+    if configured:
+        asset_weights = {str(key): float(number(value)) for key, value in configured.items()}
+        asset_basis = source.get('asset_class_basis', 'issuer published NAV allocation')
+    elif asset_rows:
+        asset_weights = {}
+        for key, value in asset_rows:
+            asset_weights[key] = asset_weights.get(key, 0) + value
+        total = sum(asset_weights.values())
+        if total <= 0 or total > 1.005:
+            raise ValueError('Invalid fund asset allocation total')
+        # FundDJ tables generally include an explicit 100% residual.  If the
+        # page is a top-category table, preserve the missing amount as Other.
+        if total < .995:
+            asset_weights['Other'] = asset_weights.get('Other', 0) + (1 - total)
+        asset_basis = 'MoneyDJ FundDJ reported fund-category allocation'
+    else:
+        raise ValueError('Fund asset allocation table missing')
+    if not top_holdings and source.get('top_holdings'):
+        top_holdings = source['top_holdings']
+    as_of = source.get('as_of_date')
+    if dates:
+        as_of = max(dates)
+    if not as_of:
+        raise ValueError('Fund holdings date missing')
+    result = {'as_of_date': parse_date(as_of), 'name': entry['name'],
+              'isin': source.get('isin') or entry.get('isin'),
+              'source_name': source.get('source_name', 'MoneyDJ FundDJ'),
+              'asset_class_weights': asset_weights,
+              'asset_class_basis': asset_basis,
+              'top_holdings': top_holdings[:10], 'complete_holdings': False,
+              'classification_dates': [parse_date(as_of)],
+              'sector_taxonomy': 'Unavailable; FundDJ does not publish complete GICS look-through',
+              'country_basis': 'Unavailable; FundDJ table is partial or absent',
+              'issues': ['FundDJ reports monthly top holdings; quarterly full holdings are not guaranteed in this endpoint.']}
+    return result
+
+
 def parse_blackrock(content):
     text = content.decode('utf-8-sig')
     lines = text.splitlines()
@@ -471,4 +602,5 @@ def evidence_only(entry, source, fetch):
 
 ADAPTERS = {'yuanta':yuanta, 'fubon':fubon, 'blackrock':blackrock,
             'vanguard':vanguard, 'invesco':invesco, 'ssga':ssga,
-            'metadata': metadata, 'evidence_only':evidence_only}
+            'metadata': metadata, 'moneydj_fund': moneydj_fund,
+            'evidence_only':evidence_only}

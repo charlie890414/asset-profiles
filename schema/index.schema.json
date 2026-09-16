@@ -22,10 +22,11 @@
     "counts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["stocks", "etfs"],
+      "required": ["stocks", "etfs", "funds"],
       "properties": {
         "stocks": { "type": "integer", "minimum": 0 },
-        "etfs":   { "type": "integer", "minimum": 0 }
+        "etfs":   { "type": "integer", "minimum": 0 },
+        "funds":  { "type": "integer", "minimum": 0 }
       }
     },
     "symbols": {
@@ -36,8 +37,8 @@
         "required": ["kind", "path"],
         "additionalProperties": false,
         "properties": {
-          "kind": { "enum": ["stock", "etf"] },
-          "path": { "type": "string", "pattern": "^(stocks|etfs)/.+\\.json$" },
+          "kind": { "enum": ["stock", "etf", "fund"] },
+          "path": { "type": "string", "pattern": "^(stocks|etfs|funds)/.+\\.json$" },
           "isin": { "type": "string", "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" }
         }
       }
@@ -47,7 +48,7 @@
       "description": "Map from ISIN to path.",
       "additionalProperties": {
         "type": "string",
-        "pattern": "^(stocks|etfs)/.+\\.json$"
+        "pattern": "^(stocks|etfs|funds)/.+\\.json$"
       },
       "propertyNames": {
         "pattern": "^[A-Z]{2}[A-Z0-9]{9}[0-9]$"

@@ -1,0 +1,41 @@
+{
+  "as_of_date": "2026-08-31",
+  "asset_class_weights": [
+    { "asset_class": "Equity", "weight": 0.476 },
+    { "asset_class": "Fund", "weight": 0.3712 },
+    { "asset_class": "Cash", "weight": 0.1219 },
+    { "asset_class": "Other", "weight": 0.0181 },
+    { "asset_class": "Repo", "weight": 0.0128 }
+  ],
+  "classification_notes": [
+    "Asset classes use the Capital official NAV allocation; repo and other assets remain explicit residual buckets.",
+    "MoneyDJ and Capital publish monthly top holdings, not a complete look-through GICS or country distribution."
+  ],
+  "isin": "TW000T1668D4",
+  "issuer": "Capital Investment Trust",
+  "kind": "fund",
+  "listings": [
+    { "currency": "TWD", "symbol": "73709234D" }
+  ],
+  "name": "群益潛力收益多重資產基金NB(月配型-新臺幣)",
+  "primary_symbol": "73709234D",
+  "provenance": {
+    "fetched_at": "2026-09-16T12:17:52Z",
+    "license": "Issuer/platform terms; rights not assumed",
+    "source": "Capital official NAV allocation / MoneyDJ FundDJ",
+    "source_url": "https://www.capitalfund.com.tw/fund/detail/180/hold"
+  },
+  "schema_version": "1.0.0",
+  "top_holdings": [
+    { "name": "高收益債券ETF", "weight": 0.112 },
+    { "name": "SPDR標普500 ETF", "weight": 0.0858 },
+    { "name": "投資級債券ETF", "weight": 0.0722 },
+    { "name": "Apple", "weight": 0.042 },
+    { "name": "台積電", "weight": 0.0341 },
+    { "name": "Dell", "weight": 0.023 },
+    { "name": "SPDR可轉換債券ETF", "weight": 0.0218 },
+    { "name": "NVIDIA", "weight": 0.0211 },
+    { "name": "SPDR生技ETF", "weight": 0.02 },
+    { "name": "Santander", "weight": 0.0191 }
+  ]
+}

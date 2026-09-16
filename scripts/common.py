@@ -99,7 +99,9 @@ def basis_points(weights, normalize=False):
 
 
 def validate_profile(profile):
-    schema = json.loads((ROOT / 'schema/etf.schema.json').read_text(encoding='utf-8'))
+    kind = profile.get('kind', 'etf')
+    schema_name = 'fund.schema.json' if kind == 'fund' else 'etf.schema.json'
+    schema = json.loads((ROOT / 'schema' / schema_name).read_text(encoding='utf-8'))
     jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker()).validate(profile)
     for field in ['sector_weights','country_weights','asset_class_weights']:
         rows = profile.get(field)

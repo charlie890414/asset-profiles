@@ -1,4 +1,4 @@
-name: Weekly ETF review
+name: Weekly ETF and fund review
 on:
   schedule:
     - cron: '0 6 * * 0'
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: etf-refresh
+  group: profile-refresh
   cancel-in-progress: false
 jobs:
   refresh:
@@ -32,7 +32,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: etf-review-${{ github.run_id }}
+          name: profile-review-${{ github.run_id }}
           path: |
             review/
             .cache/

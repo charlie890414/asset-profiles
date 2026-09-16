@@ -1,16 +1,19 @@
 {
   "counts": {
     "etfs": 10,
+    "funds": 2,
     "stocks": 0
   },
-  "generated_at": "2026-09-15T19:57:46Z",
+  "generated_at": "2026-09-16T12:19:10Z",
   "isins": {
     "IE000716YHJ7": "etfs/FWRA.L.json",
     "TW0000050004": "etfs/0050.TW.json",
     "TW0000051002": "etfs/0051.TW.json",
-    "TW0000062017": "etfs/006201.TWO.json"
+    "TW0000062017": "etfs/006201.TWO.json",
+    "TW000T1668D4": "funds/73709234D.json",
+    "TW000T3628C8": "funds/38552137C.json"
   },
-  "next_refresh_at": "2026-09-22T19:57:46Z",
+  "next_refresh_at": "2026-09-23T12:19:10Z",
   "schema_version": "1.0.0",
   "symbols": {
     "0050": {
@@ -58,6 +61,16 @@
     "009826.TW": {
       "kind": "etf",
       "path": "etfs/009826.TW.json"
+    },
+    "38552137C": {
+      "isin": "TW000T3628C8",
+      "kind": "fund",
+      "path": "funds/38552137C.json"
+    },
+    "73709234D": {
+      "isin": "TW000T1668D4",
+      "kind": "fund",
+      "path": "funds/73709234D.json"
     },
     "FWRA": {
       "isin": "IE000716YHJ7",

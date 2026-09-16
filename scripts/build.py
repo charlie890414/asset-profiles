@@ -127,6 +127,71 @@ def classify(entry, raw, evidence, max_age_days=90):
                         'asset_class_status':'requires separate NAV/component reconciliation'}}
 
 
+def classify_fund(entry, raw, evidence, max_age_days=90):
+    """Build a fund profile from reported NAV allocation and top holdings.
+
+    Mutual-fund platforms commonly publish a complete asset-class split but only
+    a monthly top-ten look-through.  Keep those denominators explicit and leave
+    GICS/country fields absent when the source does not publish a complete
+    look-through distribution.
+    """
+    as_of = date.fromisoformat(raw['as_of_date'])
+    age = (date.today() - as_of).days
+    if age < 0:
+        raise ValueError('Future fund allocation date')
+    weights = raw.get('asset_class_weights') or raw.get('fund_asset_class_weights')
+    if not isinstance(weights, dict) or not weights:
+        raise ValueError('Fund asset-class allocation missing')
+    bp = basis_points(weights, normalize=True)
+    asset_rows = [{'asset_class': key, 'weight': value / 10000}
+                  for key, value in sorted(bp.items(), key=lambda item: (-item[1], item[0])) if value]
+    profile = {'schema_version': '1.0.0', 'kind': 'fund',
+               'primary_symbol': entry['symbol'], 'listings': entry['listings'],
+               'name': raw.get('name', entry['name']), 'issuer': entry['issuer'],
+               'as_of_date': raw['as_of_date'],
+               'provenance': {'source': raw.get('source_name', entry['issuer'] + ' official'),
+                              'source_url': evidence[0]['source_url'],
+                              'fetched_at': evidence[0]['fetched_at'],
+                              'license': 'Issuer/platform terms; rights not assumed'},
+               'asset_class_weights': asset_rows}
+    if raw.get('isin') or entry.get('isin'):
+        profile['isin'] = raw.get('isin', entry.get('isin'))
+    notes = list(raw.get('issues', []))
+    if not raw.get('complete_holdings', False):
+        notes.append('Source publishes monthly top holdings only; this is not a complete look-through.')
+    if notes:
+        profile['classification_notes'] = notes
+    top_holdings = raw.get('top_holdings') or []
+    if top_holdings and sum(number(h['weight']) for h in top_holdings) <= number('1.005'):
+        profile['top_holdings'] = [{key: holding[key] for key in ('symbol', 'isin', 'name', 'weight')
+                                    if holding.get(key) is not None}
+                                   for holding in top_holdings[:10]]
+    elif top_holdings:
+        notes.append('Top holding weights exceed NAV tolerance')
+    validate_profile(profile)
+    reasons = notes
+    if age > max_age_days:
+        reasons.append(f'Stale fund allocation: {age} days')
+    confidence = max(0, min(95, int(90 - age // 14)))
+    if not raw.get('complete_holdings', False):
+        confidence = min(confidence, 85)
+    if confidence < 80:
+        reasons.append('Low confidence')
+    metadata = {'allocations': {'asset_class_weights': {
+                    'coverage': 1.0, 'unallocated_basis_points': 0,
+                    'missing_securities': [], 'complete': True,
+                    'denominator': raw.get('asset_class_basis', 'reported fund NAV allocation'),
+                    'denominator_value': '1.0'}},
+                'sector_taxonomy': raw.get('sector_taxonomy', 'Unavailable'),
+                'country_basis': raw.get('country_basis', 'Unavailable'),
+                'classification_dates': raw.get('classification_dates', [raw['as_of_date']]),
+                'equity_fraction_nav': raw.get('equity_fraction_nav'),
+                'confidence': confidence, 'evidence': evidence, 'reasons': reasons,
+                'scope': 'fund NAV asset allocation; look-through fields only when complete',
+                'asset_class_status': 'reported fund NAV allocation'}
+    return {'profile': profile, 'partial_allocations': {}, 'metadata': metadata}
+
+
 def substantive(profile):
     result = copy.deepcopy(profile)
     result.get('provenance', {}).pop('fetched_at', None)
@@ -136,14 +201,17 @@ def substantive(profile):
 def build(universe, output, published, fetch, symbols=None):
     reports = []
     seen = set()
-    for entry in universe['etfs']:
+    entries = [(entry, 'etf') for entry in universe.get('etfs', [])]
+    entries += [(entry, 'fund') for entry in universe.get('funds', [])]
+    for entry, kind in entries:
         key = safe_key(entry['symbol'])
         if key in seen:
             raise ValueError('Duplicate universe symbol')
         seen.add(key)
         if symbols and key not in symbols:
             continue
-        old_path = published/'etfs'/f'{key}.json'
+        directory = 'funds' if kind == 'fund' else 'etfs'
+        old_path = published/directory/f'{key}.json'
         old = json.loads(old_path.read_text(encoding='utf-8')) if old_path.exists() else None
         attempts = []
         candidate = None
@@ -151,7 +219,8 @@ def build(universe, output, published, fetch, symbols=None):
             start = len(fetch.evidence)
             try:
                 raw = ADAPTERS[source['adapter']](entry, source, fetch)
-                candidate = classify(entry, raw, fetch.evidence[start:], universe.get('max_age_days',90))
+                classifier = classify_fund if kind == 'fund' else classify
+                candidate = classifier(entry, raw, fetch.evidence[start:], universe.get('max_age_days',90))
                 break
             except Exception as error:
                 attempts.append({'adapter':source['adapter'], 'url':source['url'], 'error':type(error).__name__+': '+str(error),
@@ -190,10 +259,10 @@ def build(universe, output, published, fetch, symbols=None):
                         'reasons':draft.get('metadata',{}).get('reasons',[]), 'attempts':attempts})
         print(f"{key}: {draft['status']}", flush=True)
     if not reports:
-        raise ValueError('No matching ETFs')
+        raise ValueError('No matching ETFs or funds')
     write_json(output/'summary.json', {'generated_at':now(), 'results':reports})
-    markdown = ['# ETF 更新審核', '', '所有產業／國家配置均為股票部位曝險。未寫入 Wealthfolio。', '',
-                '| ETF | 狀態 | 資料日期 | 原因 |', '|---|---|---|---|']
+    markdown = ['# ETF／基金更新審核', '', '所有資料僅建立審核草稿，未寫入 Wealthfolio。基金若只有前十大持股，會保留此限制。', '',
+                '| 資產 | 狀態 | 資料日期 | 原因 |', '|---|---|---|---|']
     for r in reports:
         notes = '; '.join(r['reasons'] + [a['error'] for a in r['attempts']]).replace('|','/').replace('\n',' ')
         markdown.append(f"| {r['symbol']} | {r['status']} | {r['as_of_date'] or '-'} | {notes} |")

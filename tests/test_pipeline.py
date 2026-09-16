@@ -8,10 +8,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
-from build import build, classify
+from build import build, classify, classify_fund
 from common import basis_points, digest, safe_key, validate_profile, write_json
 from promote import promote
-from sources import invesco, metadata, parse_blackrock, parse_blackrock_xml, parse_date, vanguard
+from sources import invesco, metadata, moneydj_fund, parse_blackrock, parse_blackrock_xml, parse_date, vanguard
 from validate import validate_tree
 
 ENTRY = {'ticker':'TEST','symbol':'TEST','name':'Test ETF','issuer':'Test issuer',
@@ -178,6 +178,55 @@ class PipelineTests(unittest.TestCase):
             def get(self,*args):return json.dumps(page).encode()
         with self.assertRaisesRegex(ValueError,'Repeated'):
             vanguard(ENTRY,{'portfolio_id':'1','name_contains':'Test','url':'https://example.org'},Fake())
+
+    def test_moneydj_fund_parses_asset_buckets_and_top_holdings(self):
+        html = '''<html><body>Test Fund P
+        <table><tr><td>基金投資分佈(依產業)</td></tr>
+        <tr><th>產業</th><th>投資金額</th><th>比例(%)</th></tr>
+        <tr><td>美國股票型</td><td>60</td><td>60</td></tr>
+        <tr><td>債券型</td><td>30</td><td>30</td></tr>
+        <tr><td>流動資金</td><td>10</td><td>10</td></tr>
+        <tr><td>資料日期：2026/09/15</td></tr></table>
+        <table><tr><th>投資名稱</th><th>投資</th><th>比例</th><th>增減</th></tr>
+        <tr><td>Apple</td><td>1</td><td>6.5%</td><td>-</td></tr></table>
+        </body></html>'''.encode()
+        class Fake:
+            def get(self, url): return html
+        entry = {'name': 'Test Fund', 'isin': 'TW000T3628C8'}
+        result = moneydj_fund(entry, {'url': 'https://example.org/fund', 'name_contains': 'Test Fund'}, Fake())
+        self.assertEqual(result['as_of_date'], '2026-09-15')
+        self.assertEqual(result['asset_class_weights']['Equity'], .6)
+        self.assertEqual(result['asset_class_weights']['Fixed Income'], .3)
+        self.assertEqual(result['top_holdings'][0]['name'], 'Apple')
+        self.assertEqual(result['top_holdings'][0]['weight'], .065)
+
+    def test_fund_classifier_keeps_incomplete_lookthrough_explicit(self):
+        raw_fund = {'as_of_date': date.today().isoformat(),
+                    'asset_class_weights': {'Equity': .6, 'Fixed Income': .4},
+                    'asset_class_basis': 'reported NAV', 'complete_holdings': False,
+                    'top_holdings': [{'name': 'A', 'weight': .2}], 'issues': []}
+        result = classify_fund({'symbol': 'FUND', 'name': 'Test Fund', 'issuer': 'Issuer',
+                                'listings': [{'symbol': 'FUND', 'currency': 'TWD'}]},
+                               raw_fund, EVIDENCE)
+        self.assertEqual(result['profile']['kind'], 'fund')
+        self.assertEqual(sum(row['weight'] for row in result['profile']['asset_class_weights']), 1)
+        self.assertNotIn('sector_weights', result['profile'])
+        self.assertIn('not a complete look-through', result['profile']['classification_notes'][0])
+
+    def test_promote_fund_uses_funds_directory_without_gics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); published = root / 'v1'; review = root / 'review'
+            entry = {'symbol': 'FUND', 'name': 'Test Fund', 'issuer': 'Issuer',
+                     'listings': [{'symbol': 'FUND', 'currency': 'TWD'}]}
+            result = classify_fund(entry, {'as_of_date': date.today().isoformat(),
+                                           'asset_class_weights': {'Equity': .6, 'Cash': .4},
+                                           'complete_holdings': False, 'issues': []}, EVIDENCE)
+            draft = {**result, 'status': 'ready', 'base_sha256': digest(None),
+                     'candidate_sha256': digest(result['profile'])}
+            write_json(review / 'drafts/FUND.json', draft)
+            promote(['FUND'], review, published)
+            self.assertTrue((published / 'funds/FUND.json').is_file())
+            validate_tree(published)
 
 
 if __name__=='__main__':unittest.main()

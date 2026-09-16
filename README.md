@@ -1,19 +1,21 @@
 # wealthfolio-profile
 
-以持有 ETF 為起點的定期分類資料更新專案，參照 [wealthfolio/asset-profiles](https://github.com/wealthfolio/asset-profiles) 的 v1 JSON 格式。更新預設產生逐檔審核草稿，不直接修改 Wealthfolio。
+以持有 ETF 與境內基金為起點的定期分類資料更新專案，參照 [wealthfolio/asset-profiles](https://github.com/wealthfolio/asset-profiles) 的 v1 JSON 格式。更新預設產生逐檔審核草稿，不直接修改 Wealthfolio。
 
 ## 目前可用範圍
 
-首批設定：0050、0051、006201、006208、009826、SPYM、VT、VWRA、FWRA、VALU。代號來源是 2026-09-13 的持有紀錄查詢；部分帳戶回應仍有截斷標記，清單不保證涵蓋所有資產。設定不含帳戶、持有數量、成本或 Wealthfolio 資產 ID。BOXX 刻意排除，不納入定期更新範圍。
+首批設定：0050、0051、006201、006208、009826、SPYM、VT、VWRA、FWRA、VALU，以及持有清單中的 38552137C（安聯四季成長組合基金-P）與 73709234D（群益潛力收益多重資產基金 NB）。代號來源是 2026-09-13 的持有紀錄查詢；部分帳戶回應仍有截斷標記，清單不保證涵蓋所有資產。設定不含帳戶、持有數量、成本或 Wealthfolio 資產 ID。BOXX 刻意排除，不納入定期更新範圍。
 
-已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard Global 分頁 GraphQL、Invesco 官方 holdings／aggregate API，以及官方產品 metadata fallback。現行 10 檔都可產生草稿；最新逐檔結果見 [review/review.md](review/review.md)。
+已實際驗證的來源：元大 Nuxt 公開持股、富邦資產表、BlackRock CSV/XML look-through、SSGA 持股及產業表、Vanguard Global 分頁 GraphQL、Invesco 官方 holdings／aggregate API，以及官方產品 metadata fallback。現行 10 檔 ETF 與兩檔基金都可產生草稿；最新逐檔結果見 [review/review.md](review/review.md)。
+
+基金使用 `moneydj_fund` adapter 讀取 FundDJ 的日期、基金類別配置與每月前十大持股；73709234D 的 NAV 資產類別以群益官方配置交叉核對。基金完整穿透資料未公開時，profile 保留 `classification_notes`，不把部分表格猜成 GICS 或國家權重。
 
 目前注意事項：
 
 - VALU：使用 Vanguard Global GraphQL 的完整游標分頁（2026-08-31），以 `securityTypes=null` 取得 API 回報的 6,743 筆，並檢查基金名稱、日期與分頁終點。
 - FWRA：使用 Invesco 官方 holdings index（2,292 筆，2026-09-14）及同日 sector/country aggregate；`Other` 殘餘保留為明確分類列，不展開猜測。
 - BOXX：刻意排除，不納入本專案的 ETF 更新清單；其選擇權／現金策略資料保留在來源研究筆記中。
-- MoneyDJ、Morningstar、justETF、ETF.com、VettaFi、SEC N-PORT 尚未實作；目前不宣稱已支援這些備援來源。
+- Morningstar、justETF、ETF.com、VettaFi、SEC N-PORT 尚未實作；目前不宣稱已支援這些備援來源。
 - 不含 Wealthfolio 自動同步 API。要寫入使用者分類，仍須另行取得即時資產／taxonomy IDs、原配置與確認。
 
 ## 執行
@@ -53,7 +55,7 @@ python -m venv .venv
 
 `promote` 只接受 `ready` 候選，驗證候選雜湊與原版雜湊、資料日期、鎖定及 schema。不接受被修改的候選、舊於已發布版本的來源、過期來源或完全沒有完整分類維度的檔案。`needs_review` 與 `metadata_only` 只留在草稿，不進 v1。這不是信心分數自動核准。
 
-`v1/` 起始為空索引，代表尚未核准任何實際資料。核准後會產生 `v1/etfs/<symbol>.json` 和 `v1/index.json`。公開 GitHub 儲存庫可使用 `https://cdn.jsdelivr.net/gh/OWNER/REPO@main/v1/index.json`；私人儲存庫不適用公開 CDN，必須自行提供有授權的存取方式。
+核准後 ETF 會產生 `v1/etfs/<symbol>.json`，基金會產生 `v1/funds/<symbol>.json`，並同步更新 `v1/index.json` 的 `counts.funds`、symbol kind 與 ISIN 映射。公開 GitHub 儲存庫可使用 `https://cdn.jsdelivr.net/gh/OWNER/REPO@main/v1/index.json`；私人儲存庫不適用公開 CDN，必須自行提供有授權的存取方式。
 
 ## 配置語意與保護
 
@@ -65,10 +67,10 @@ python -m venv .venv
 - 009826 的 NDIA 尚未做穿透，該部分的國家和產業保持未知，不歸為愛爾蘭／金融。
 - 不把期貨名目本金加到資產市值，也不把非股票餘額視為銀行存款。全基金資產類別配置尚待逐項 NAV 對帳。
 - `manual_overrides/<symbol>.json` 是保護鎖，檔案存在即禁止升版。這版不自動套用 patch，且無法偵測未匯入此專案的 Wealthfolio 使用者修改。
-- 信心分數是可解釋的排序指標，非經驗校準機率；所有變更一律需審核。來源優先序在 `config/etfs.json` 的 `sources` 陣列，錯誤才嘗試下一來源，不混合不同日期的配置來湊滿。
+- 信心分數是可解釋的排序指標，非經驗校準機率；所有變更一律需審核。來源優先序在 `config/etfs.json` 的 `sources` 陣列，錯誤才嘗試下一來源，不混合不同日期的配置來湊滿。基金資料的 `asset_class_weights` 代表基金 NAV 配置；若只有前十大持股，維持此限制而不宣稱完整 look-through。
 
 ## 出處與授權
 
-`schema/etf.schema.json`、`schema/index.schema.json` 沿用 Wealthfolio 上游 MIT 程式碼，保留 [LICENSE-UPSTREAM](LICENSE-UPSTREAM)。其餘管線為本專案實作。沒有複製上游整批資料，也沒有假設發行商資料已取得再散布授權；公開資料前依實際來源條款確認用途，provenance 保留來源。
+`schema/etf.schema.json`、`schema/fund.schema.json`、`schema/index.schema.json` 沿用 Wealthfolio 上游 MIT 程式碼的欄位風格，保留 [LICENSE-UPSTREAM](LICENSE-UPSTREAM)。其餘管線為本專案實作。沒有複製上游整批資料，也沒有假設發行商資料已取得再散布授權；公開資料前依實際來源條款確認用途，provenance 保留來源。
 
 `config/vanguard-query.json` 依 Vanguard 公開網站的查詢欄位建立，使用公開網站 client identifier `uk2`，不是帳戶憑證。

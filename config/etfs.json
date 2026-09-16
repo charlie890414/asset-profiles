@@ -275,5 +275,59 @@
         }
       ]
     }
+  ],
+  "funds": [
+    {
+      "ticker": "38552137C",
+      "symbol": "38552137C",
+      "kind": "fund",
+      "name": "安聯四季成長組合基金-P類型-新臺幣",
+      "name_contains": "安聯四季成長組合基金-P",
+      "issuer": "Allianz Global Investors Taiwan",
+      "isin": "TW000T3628C8",
+      "listings": [
+        { "symbol": "38552137C", "currency": "TWD" }
+      ],
+      "sources": [
+        {
+          "adapter": "moneydj_fund",
+          "url": "https://www.moneydj.com/funddj/yp/yp013000.djhtm?a=ACDD100&topc=",
+          "name_contains": "安聯四季成長組合基金-P",
+          "isin": "TW000T3628C8",
+          "official_url": "https://tw.allianzgi.com/zh-TW/Products-solutions/taiwan-onshore/allianz-global-investors-all-seasons-growth-fund-p-twd",
+          "description": "MoneyDJ FundDJ monthly allocation and top holdings; issuer page is the product reference."
+        }
+      ]
+    },
+    {
+      "ticker": "73709234D",
+      "symbol": "73709234D",
+      "kind": "fund",
+      "name": "群益潛力收益多重資產基金NB(月配型-新臺幣)",
+      "name_contains": "群益潛力收益多重資產基金",
+      "issuer": "Capital Investment Trust",
+      "isin": "TW000T1668D4",
+      "listings": [
+        { "symbol": "73709234D", "currency": "TWD" }
+      ],
+      "sources": [
+        {
+          "adapter": "moneydj_fund",
+          "url": "https://www.moneydj.com/funddj/yp/yp013000.djhtm?a=ACCA209&topc=",
+          "name_contains": "群益潛力收益多重資產基金",
+          "isin": "TW000T1668D4",
+          "official_url": "https://www.capitalfund.com.tw/fund/detail/180/hold",
+          "asset_class_weights": {
+            "Equity": 0.476,
+            "Fund": 0.3712,
+            "Cash": 0.1219,
+            "Other": 0.0181,
+            "Repo": 0.0128
+          },
+          "asset_class_basis": "Capital official NAV asset allocation (stocks, funds, deposits, other assets, repo)",
+          "description": "MoneyDJ top holdings cross-checked against Capital official fund allocation."
+        }
+      ]
+    }
   ]
 }
