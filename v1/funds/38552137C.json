@@ -8,7 +8,8 @@
   ],
   "classification_notes": [
     "MoneyDJ reports underlying fund-category buckets rather than a complete GICS or country look-through.",
-    "The monthly table contains the top ten positions; it is not a complete holdings file."
+    "SITCA's 2026/08 monthly top-ten disclosure confirms the weights and adds ISIN identifiers; it is not a complete holdings file.",
+    "SITCA's 2026/06 quarterly disclosure lists positions at or above 1% NAV (93.21% coverage); the remaining 6.79% is retained as unclassified."
   ],
   "isin": "TW000T3628C8",
   "issuer": "Allianz Global Investors Taiwan",
@@ -26,15 +27,15 @@
   },
   "schema_version": "1.0.0",
   "top_holdings": [
-    { "name": "Vanguard標普500指數ETF", "weight": 0.1605 },
-    { "name": "Invesco納斯達克100指數ETF", "weight": 0.1435 },
-    { "name": "元大台灣卓越50基金", "weight": 0.065 },
-    { "name": "iShares核心標普500指數ETF", "weight": 0.0644 },
-    { "name": "JPMorgan BetaBuilders美國股票ETF", "weight": 0.0483 },
-    { "name": "安聯台灣科技基金", "weight": 0.0454 },
-    { "name": "普徠仕全球焦點成長股票基金I級別(美元)", "weight": 0.0459 },
-    { "name": "施羅德環球基金系列－環球可轉換債券(美元)C-累積", "weight": 0.0375 },
-    { "name": "PIMCO新興市場債券基金-機構H級類別(累積股份)", "weight": 0.0345 },
-    { "name": "iShares核心高股利ETF", "weight": 0.0316 }
+    { "isin": "US9229083632", "name": "VANGUARD S&P 500 ETF", "weight": 0.1605 },
+    { "isin": "US46090E1038", "name": "Invesco QQQ Trust Se", "weight": 0.1435 },
+    { "symbol": "98764389", "name": "元大台灣卓越50基金", "weight": 0.065 },
+    { "isin": "US4642872000", "name": "ISHARES CORE S&P 500", "weight": 0.0644 },
+    { "isin": "US46641Q3992", "name": "JPMorgan BetaBuilders US Equity ETF", "weight": 0.0483 },
+    { "isin": "LU0143563046", "name": "普徠仕全球焦點成長股票型基金I(美元)", "weight": 0.0459 },
+    { "symbol": "18480065", "name": "安聯台灣科技基金", "weight": 0.0454 },
+    { "isin": "LU0351442933", "name": "施羅德環球基金系列－環球可轉換債券(美元)C-累積", "weight": 0.0375 },
+    { "isin": "IE0032314100", "name": "PIMCO新興市場債券基金-機構H級類別(累積股份)", "weight": 0.0345 },
+    { "isin": "US46429B6636", "name": "ISHARES HIGH DIVIDEN", "weight": 0.0316 }
   ]
 }

@@ -9,7 +9,8 @@
   ],
   "classification_notes": [
     "Asset classes use the Capital official NAV allocation; repo and other assets remain explicit residual buckets.",
-    "MoneyDJ and Capital publish monthly top holdings, not a complete look-through GICS or country distribution."
+    "SITCA's 2026/08 monthly top-ten disclosure confirms the weights and adds ISIN identifiers; it is not a complete look-through GICS or country distribution.",
+    "SITCA's 2026/06 quarterly disclosure lists positions at or above 1% NAV (74.75% coverage); the remaining 25.25% is retained as unclassified."
   ],
   "isin": "TW000T1668D4",
   "issuer": "Capital Investment Trust",
@@ -27,15 +28,15 @@
   },
   "schema_version": "1.0.0",
   "top_holdings": [
-    { "name": "高收益債券ETF", "weight": 0.112 },
-    { "name": "SPDR標普500 ETF", "weight": 0.0858 },
-    { "name": "投資級債券ETF", "weight": 0.0722 },
-    { "name": "Apple", "weight": 0.042 },
-    { "name": "台積電", "weight": 0.0341 },
-    { "name": "Dell", "weight": 0.023 },
-    { "name": "SPDR可轉換債券ETF", "weight": 0.0218 },
-    { "name": "NVIDIA", "weight": 0.0211 },
-    { "name": "SPDR生技ETF", "weight": 0.02 },
-    { "name": "Santander", "weight": 0.0191 }
+    { "isin": "US4642885135", "name": "iShares安碩iBoxx美元高收益公司債ETF", "weight": 0.112 },
+    { "isin": "US78462F1030", "name": "State Street SPDR標普500指數股票ETF", "weight": 0.0858 },
+    { "isin": "US4642872422", "name": "iShares iBoxx美元投資級公司債ETF", "weight": 0.0722 },
+    { "isin": "US0378331005", "name": "蘋果公司", "weight": 0.042 },
+    { "symbol": "2330", "name": "台積電", "weight": 0.0341 },
+    { "isin": "US24703L2025", "name": "戴爾科技公司", "weight": 0.023 },
+    { "isin": "US78464A3591", "name": "State Street SPDR彭博可轉換證券ETF", "weight": 0.0218 },
+    { "isin": "US67066G1040", "name": "輝達公司", "weight": 0.0211 },
+    { "isin": "US78464A8707", "name": "State Street SPDR標普生技指數股票ETF", "weight": 0.02 },
+    { "isin": "ES0113900J37", "name": "西班牙國際銀行", "weight": 0.0191 }
   ]
 }
