@@ -200,6 +200,23 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result['top_holdings'][0]['name'], 'Apple')
         self.assertEqual(result['top_holdings'][0]['weight'], .065)
 
+    def test_moneydj_nested_tables_count_allocations_and_holdings_once(self):
+        html = (Path(__file__).parent / 'fixtures' / 'moneydj_nested_fund.html').read_bytes()
+        class Fake:
+            def get(self, url): return html
+        result = moneydj_fund({'name': 'Test Fund'}, {'url': 'https://example.org/fund'}, Fake())
+        self.assertEqual(result['as_of_date'], '2026-08-31')
+        expected = {'Equity': .775, 'Fixed Income': .1549, 'Other': .0368, 'Cash': .0333}
+        self.assertEqual(set(result['asset_class_weights']), set(expected))
+        for key, weight in expected.items():
+            self.assertAlmostEqual(result['asset_class_weights'][key], weight)
+        self.assertAlmostEqual(sum(result['asset_class_weights'].values()), 1)
+        names = [holding['name'] for holding in result['top_holdings']]
+        self.assertEqual(len(names), 10)
+        self.assertEqual(len(names), len(set(names)))
+        self.assertEqual(names[0], 'Vanguard標普500指數ETF')
+        self.assertAlmostEqual(result['top_holdings'][0]['weight'], .1605)
+
     def test_fund_classifier_keeps_incomplete_lookthrough_explicit(self):
         raw_fund = {'as_of_date': date.today().isoformat(),
                     'asset_class_weights': {'Equity': .6, 'Fixed Income': .4},

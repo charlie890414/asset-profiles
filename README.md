@@ -31,6 +31,12 @@ python -m venv .venv
 
 每檔輸出到 `review/drafts/<symbol>.json`，含舊值、新值、變更欄位、來源 URL、日期、SHA-256、覆蓋率、未配置 bp、分類標準、分母及待審原因。`review/summary.json` 與 `review/review.md` 是該次執行摘要。
 
+元大／富邦台股 ETF 若在 EWT／EEMS 與既有 override 中仍缺個股產業，會依序查詢 Vanguard VT 官方完整持股的 `gicsSectorDescription`、TWSE／TPEx 市場身分、Stock Analysis 公司分類與 TradingView 產業分類。查到交易所公司資料後仍會繼續查分類網站；一個網站失敗也會繼續下一個。Vanguard 僅採用台灣股票、代號相符、日期在 90 天內且無衝突的 GICS。
+
+第三方結果須符合市場、股票代號、相同 ISIN，且 Stock Analysis 公司資料更新日期在 90 天內，再由 TradingView 的明確 sector／industry 對照交叉核對，才以 `resolved_crosswalk` 補入本次草稿。TradingView 未公開分類生效日，保留 `as_of_date: null`，只用原始抓取日期判斷佐證是否過期；不把價格日期當分類日期。這是第三方產業大類對照，metadata 會標示與原生 GICS 的差別。對照表在 `scripts/sector_providers.py`，只涵蓋已明確建立的產業配對；未知配對不猜測。單一候選、過期或身分不足維持 `candidate`，分類不一致維持 `conflict`，沒有資料維持 `unresolved`；均不補入權重。既有 override 與已發布資料不會被自動改寫。
+
+查找結果出現在審核報告的「缺漏產業自動查找」及草稿 `metadata.classification_lookup`，包含各次查找的來源 URL、資料日期、取得證據與錯誤。備援查找失敗不會使已取得的 ETF 持股失效，缺漏比例仍保持未分類。`--offline` 使用同一套查找及原始來源快取；沒有快取的備援來源會記錄查找錯誤。每週 workflow 執行相同的 build 指令，因此部署這些變更後即會自動查找。
+
 ```powershell
 # 僅更新指定檔案（摘要也只涵蓋這次選擇）
 .venv/Scripts/python scripts/build.py --symbols 0050.TW VT VWRA.L

@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup
 from openpyxl import load_workbook
 
 from common import ROOT, number, country, sector, now
+from taiwan_lookup import lookup_missing
 
 
 class Fetcher:
@@ -108,7 +109,13 @@ def _fund_date(text):
 def _fund_table_rows(table):
     rows = []
     for row in table.find_all('tr'):
-        cells = row.find_all(['th', 'td'])
+        # Layout tables wrap the data tables. Read each row only in its
+        # owning table, and do not treat nested table text as a data cell.
+        if row.find_parent('table') is not table:
+            continue
+        cells = row.find_all(['th', 'td'], recursive=False)
+        if any(cell.find('table') is not None for cell in cells):
+            continue
         values = [cell.get_text(' ', strip=True) for cell in cells]
         if values:
             rows.append(values)
@@ -334,6 +341,12 @@ def classification_map(fetch):
     return mapping, dates
 
 
+def taiwan_sector_taxonomy(lookups):
+    if any(r['status'] == 'resolved_crosswalk' for r in lookups):
+        return 'GICS issuer lookup plus corroborated third-party sector crosswalk (see classification_lookup)'
+    return 'GICS (issuer holdings lookup)'
+
+
 def yuanta(entry, source, fetch):
     html = fetch.get(source['url'])
     node = shutil.which('node')
@@ -354,9 +367,12 @@ def yuanta(entry, source, fetch):
     holdings = [{'symbol':h['code'], 'name':h['name'], 'weight':float(number(h['weights'])/100),
                  'value':float(number(h['weights'])), 'country':'TW', 'sector':mapping.get(h['code']), 'equity':True}
                 for h in weights['StockWeights']]
+    lookups, extra_dates = lookup_missing(holdings, fetch, vanguard)
+    dates.extend(extra_dates)
     return {'as_of_date':parse_date(raw['PCF']['trandate']), 'holdings':holdings,
+            'classification_lookup': lookups,
             'isin':fund['ISINCODE'], 'name':fund['FUND_NAME'], 'complete_holdings':True,
-            'classification_dates':dates, 'sector_taxonomy':'GICS (issuer holdings lookup)',
+            'classification_dates':dates, 'sector_taxonomy':taiwan_sector_taxonomy(lookups),
             'country_basis':'Taiwan domestic equity investment market; not issuer domicile',
             'equity_fraction_nav':float(number(weights['Summary']['stkvalues'])/nav),
             'denominator':'sum of issuer rounded stock weights (equity sleeve)',
@@ -383,8 +399,11 @@ def fubon(entry, source, fetch):
                              'weight':float(value/nav), 'country':'TW', 'sector':mapping.get(cells[0]), 'equity':True})
     if not holdings:
         raise ValueError('Empty Fubon stock table')
+    lookups, extra_dates = lookup_missing(holdings, fetch, vanguard)
+    dates.extend(extra_dates)
     return {'as_of_date':parse_date(date_match[1]), 'holdings':holdings, 'complete_holdings':True,
-            'classification_dates':dates, 'sector_taxonomy':'GICS (issuer holdings lookup)',
+            'classification_lookup': lookups,
+            'classification_dates':dates, 'sector_taxonomy':taiwan_sector_taxonomy(lookups),
             'country_basis':'Taiwan domestic equity investment market; not issuer domicile',
             'denominator':'equity market value',
             'equity_fraction_nav':sum(h['weight'] for h in holdings),

@@ -123,6 +123,7 @@ def classify(entry, raw, evidence, max_age_days=90):
                         'country_basis':raw['country_basis'], 'classification_dates':classification_dates,
                         'equity_fraction_nav':raw.get('equity_fraction_nav'), 'confidence':confidence,
                         'evidence':evidence, 'reasons':reasons,
+                        'classification_lookup':raw.get('classification_lookup', []),
                         'scope':'underlying equity exposure; not the ETF legal entity GICS',
                         'asset_class_status':'requires separate NAV/component reconciliation'}}
 
@@ -256,7 +257,8 @@ def build(universe, output, published, fetch, symbols=None):
         write_json(review_path, draft)
         reports.append({'symbol':key, 'status':draft['status'],
                         'as_of_date':draft.get('profile',{}).get('as_of_date') if draft.get('profile') else None,
-                        'reasons':draft.get('metadata',{}).get('reasons',[]), 'attempts':attempts})
+                        'reasons':draft.get('metadata',{}).get('reasons',[]), 'attempts':attempts,
+                        'classification_lookup':draft.get('metadata',{}).get('classification_lookup', [])})
         print(f"{key}: {draft['status']}", flush=True)
     if not reports:
         raise ValueError('No matching ETFs or funds')
@@ -266,6 +268,25 @@ def build(universe, output, published, fetch, symbols=None):
     for r in reports:
         notes = '; '.join(r['reasons'] + [a['error'] for a in r['attempts']]).replace('|','/').replace('\n',' ')
         markdown.append(f"| {r['symbol']} | {r['status']} | {r['as_of_date'] or '-'} | {notes} |")
+    lookups = [(r['symbol'], lookup) for r in reports for lookup in r['classification_lookup']]
+    if lookups:
+        markdown.extend(['', '## 缺漏產業自動查找', '',
+                         '缺漏依序查 Vanguard、交易所身分、Stock Analysis 與 TradingView。第三方分類對照明確標示為 crosswalk；交易所產業代碼不直接轉成 GICS。完整證據見草稿 metadata.classification_lookup。', '',
+                         '| ETF | 持股 | 結果 | 查找證據 |', '|---|---|---|---|'])
+        for symbol, lookup in lookups:
+            details = []
+            for attempt in lookup['attempts']:
+                company = attempt.get('company')
+                candidate = attempt.get('candidate')
+                detail = attempt.get('error') or (
+                    f"{company['company_name']} / 交易所產業代碼 {company['industry_code']} / {company['as_of_date']}"
+                    if company else (
+                        f"{candidate['raw_sector']} / {candidate.get('industry')} → {candidate.get('sector') or '未建立對照'}"
+                        f" / {candidate.get('as_of_date') or '分類日期未公開'} / eligible={candidate['eligible']}"
+                        if candidate else ', '.join(attempt.get('sectors', [])) or '未找到分類'))
+                details.append(f"[{attempt['source']}]({attempt['source_url']}): {detail}")
+            note = '; '.join(details).replace('|', '/').replace('\n', ' ')
+            markdown.append(f"| {symbol} | {lookup['symbol']} | {lookup['status']} {lookup.get('sector', '')} | {note} |")
     (output/'review.md').write_text('\n'.join(markdown)+'\n',encoding='utf-8')
     return reports
 
